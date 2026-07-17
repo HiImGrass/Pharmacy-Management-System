@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox fx:id="rootLichSuNhapThuoc"
+      prefHeight="650.0"
+      prefWidth="900.0"
+      spacing="18.0"
+      style="-fx-background-color: #f4f7fb; -fx-padding: 24;"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.PharmacyManagement.gui.controller.LichSuNhapThuocController">
+
+    <children>
+        <!-- LIGHT THEME: soft white + blue/green accent -->
+        <!-- HEADER -->
+        <HBox alignment="CENTER_LEFT" spacing="16.0">
+            <children>
+                <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                    <children>
+                        <Label text="LỊCH SỬ NHẬP HÀNG" textFill="#2563eb">
+                            <font>
+                                <Font name="System Bold" size="25.0" />
+                            </font>
+                        </Label>
+                        <Label text="Tra cứu &amp; quản lý hóa đơn đã nhập" textFill="#64748b">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+
+        <!-- SUMMARY CARDS -->
+        <HBox spacing="14.0">
+            <children>
+                <VBox prefHeight="115.0" prefWidth="150.0" spacing="10.0"
+                      style="-fx-background-color: #ffffff; -fx-background-radius: 14; -fx-border-color: #e5e7eb; -fx-border-radius: 14; -fx-padding: 16; -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.10), 14, 0, 0, 4);">
+                    <children>
+                        <Label text="TỔNG HÓA ĐƠN" textFill="#64748b">
+                            <font>
+                                <Font size="12.0" />
+                            </font>
+                        </Label>
+                        <Label fx:id="lblTongHoaDon" text="0" textFill="#0f172a">
+                            <font>
+                                <Font name="System Bold" size="26.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </VBox>
+
+                <VBox prefHeight="115.0" prefWidth="150.0" spacing="10.0"
+                      style="-fx-background-color: #ffffff; -fx-background-radius: 14; -fx-border-color: #fde68a; -fx-border-radius: 14; -fx-padding: 16; -fx-effect: dropshadow(gaussian, rgba(245,158,11,0.14), 14, 0, 0, 4);">
+                    <children>
+                        <Label text="HÔM NAY" textFill="#64748b">
+                            <font>
+                                <Font size="12.0" />
+                            </font>
+                        </Label>
+                        <Label fx:id="lblHomNay" text="0" textFill="#f59e0b">
+                            <font>
+                                <Font name="System Bold" size="26.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+
+        <!-- FILTER BAR -->
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <children>
+                <TextField fx:id="txtSearch"
+                           prefHeight="42.0"
+                           prefWidth="230.0"
+                           promptText="🔍  Tìm mã HĐ, tên khách"
+                           style="-fx-background-color: #ffffff; -fx-background-radius: 10; -fx-border-color: #93c5fd; -fx-border-width: 1.5; -fx-border-radius: 10; -fx-text-fill: #0f172a; -fx-prompt-text-fill: #94a3b8; -fx-padding: 0 12 0 12;" />
+
+                <DatePicker fx:id="dpTuNgay"
+                            prefHeight="42.0"
+                            prefWidth="162.0"
+                            promptText="mm/dd/yyyy"
+                            style="-fx-background-color: #ffffff; -fx-background-radius: 10; -fx-border-color: #cbd5e1; -fx-border-radius: 10; -fx-text-fill: #0f172a;" />
+
+                <Label text="–" textFill="#64748b">
+                    <font>
+                        <Font size="18.0" />
+                    </font>
+                </Label>
+
+                <DatePicker fx:id="dpDenNgay"
+                            prefHeight="42.0"
+                            prefWidth="162.0"
+                            promptText="mm/dd/yyyy"
+                            style="-fx-background-color: #ffffff; -fx-background-radius: 10; -fx-border-color: #cbd5e1; -fx-border-radius: 10; -fx-text-fill: #0f172a;" />
+
+                <Button fx:id="btnLamMoi"
+                        mnemonicParsing="false"
+                        onAction="#xuLyLamMoi"
+                        prefHeight="42.0"
+                        prefWidth="46.0"
+                        text="↻"
+                        textFill="#ffffff"
+                        style="-fx-background-color: #2563eb; -fx-background-radius: 10; -fx-border-color: #2563eb; -fx-border-radius: 10; -fx-cursor: hand;">
+                    <font>
+                        <Font name="System Bold" size="18.0" />
+                    </font>
+                </Button>
+            </children>
+        </HBox>
+
+        <Label fx:id="lblKetQua" text="0 kết quả" textFill="#64748b">
+            <font>
+                <Font size="13.0" />
+            </font>
+        </Label>
+
+        <!-- TABLE -->
+        <TableView fx:id="tableLichSuNhapHang"
+                   prefHeight="320.0"
+                   style="-fx-background-color: #ffffff; -fx-control-inner-background: #ffffff; -fx-table-cell-border-color: #e5e7eb; -fx-border-color: #dbeafe; -fx-border-radius: 14; -fx-background-radius: 14; -fx-text-background-color: #0f172a; -fx-selection-bar: #dbeafe; -fx-selection-bar-non-focused: #eff6ff;"
+                   VBox.vgrow="ALWAYS">
+            <placeholder>
+                <Label text="Không có hóa đơn nhập hàng" textFill="#64748b" />
+            </placeholder>
+            <columns>
+                <TableColumn fx:id="colStt" prefWidth="45.0" text="#" />
+                <TableColumn fx:id="colMaPhieuNhap" prefWidth="145.0" text="MÃ PHIẾU NHẬP" />
+                <TableColumn fx:id="colNhaCungCap" prefWidth="120.0" text="NHÀ CUNG CẤP" />
+                <TableColumn fx:id="colNgayNhap" prefWidth="135.0" text="NGÀY NHẬP" />
+                <TableColumn fx:id="colChiTiet" prefWidth="80.0" text="CHI TIẾT" />
+            </columns>
+        </TableView>
+
+        <!-- FOOTER / PAGINATION -->
+        <HBox alignment="CENTER_LEFT" spacing="8.0">
+            <children>
+                <Label fx:id="lblPhanTrang" text="Hiển thị 0–0 trong 0 hóa đơn" textFill="#64748b" HBox.hgrow="ALWAYS">
+                    <font>
+                        <Font size="13.0" />
+                    </font>
+                </Label>
+                <Region HBox.hgrow="ALWAYS" />
+                <!-- <Button fx:id="btnTrangTruoc"
+                        mnemonicParsing="false"
+                        onAction="#xuLyTrangTruoc"
+                        prefHeight="38.0"
+                        prefWidth="42.0"
+                        text="‹"
+                        textFill="#334155"
+                        style="-fx-background-color: #ffffff; -fx-background-radius: 10; -fx-border-color: #cbd5e1; -fx-border-radius: 10; -fx-cursor: hand;">
+                    <font>
+                        <Font name="System Bold" size="18.0" />
+                    </font>
+                </Button>
+                <Button fx:id="btnPage1"
+                        mnemonicParsing="false"
+                        onAction="#xuLyChonTrang1"
+                        prefHeight="38.0"
+                        prefWidth="42.0"
+                        text="1"
+                        textFill="#ffffff"
+                        style="-fx-background-color: #2563eb; -fx-background-radius: 10; -fx-border-color: #1d4ed8; -fx-border-radius: 10; -fx-cursor: hand;">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font>
+                </Button>
+                <Button fx:id="btnPage2"
+                        mnemonicParsing="false"
+                        onAction="#xuLyChonTrang2"
+                        prefHeight="38.0"
+                        prefWidth="42.0"
+                        text="2"
+                        textFill="#475569"
+                        style="-fx-background-color: #ffffff; -fx-background-radius: 10; -fx-border-color: #cbd5e1; -fx-border-radius: 10; -fx-cursor: hand;">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font>
+                </Button>
+                <Label text="..." textFill="#64748b">
+                    <font>
+                        <Font size="15.0" />
+                    </font>
+                </Label>
+                <Button fx:id="btnTrangCuoi"
+                        mnemonicParsing="false"
+                        onAction="#xuLyTrangCuoi"
+                        prefHeight="38.0"
+                        prefWidth="42.0"
+                        text="4"
+                        textFill="#475569"
+                        style="-fx-background-color: #ffffff; -fx-background-radius: 10; -fx-border-color: #cbd5e1; -fx-border-radius: 10; -fx-cursor: hand;">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font>
+                </Button>
+                <Button fx:id="btnTrangSau"
+                        mnemonicParsing="false"
+                        onAction="#xuLyTrangSau"
+                        prefHeight="38.0"
+                        prefWidth="42.0"
+                        text="›"
+                        textFill="#334155"
+                        style="-fx-background-color: #ffffff; -fx-background-radius: 10; -fx-border-color: #cbd5e1; -fx-border-radius: 10; -fx-cursor: hand;">
+                    <font>
+                        <Font name="System Bold" size="18.0" />
+                    </font>
+                </Button> -->
+            </children>
+        </HBox>
+    </children>
+</VBox>

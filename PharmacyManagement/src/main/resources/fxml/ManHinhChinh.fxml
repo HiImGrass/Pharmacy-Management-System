@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane minHeight="720.0"
+            minWidth="1180.0"
+            prefHeight="760.0"
+            prefWidth="1280.0"
+            style="-fx-background-color: #eef4ff;"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.PharmacyManagement.gui.controller.ManHinhChinhController">
+
+    <left>
+        <fx:include source="sidebar/Sidebar.fxml" />
+    </left>
+
+    <top>
+        <HBox alignment="CENTER_LEFT"
+              prefHeight="78.0"
+              spacing="16.0"
+              style="-fx-background-color: #ffffff; -fx-padding: 14 26 14 26; -fx-border-color: transparent transparent #dbeafe transparent; -fx-border-width: 0 0 1 0;"
+              BorderPane.alignment="CENTER">
+            <children>
+                <VBox spacing="3.0">
+                    <children>
+                        <Label text="Hệ thống quản lý bán thuốc" textFill="#0f172a">
+                            <font>
+                                <Font name="System Bold" size="22.0" />
+                            </font>
+                        </Label>
+                        <Label text="Quản lý kho thuốc, khách hàng, nhập hàng và hóa đơn bán hàng" textFill="#64748b">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </VBox>
+
+            </children>
+        </HBox>
+    </top>
+
+    <center>
+        <StackPane fx:id="contentArea"
+                   style="-fx-background-color: transparent; -fx-padding: 22;"
+                   BorderPane.alignment="CENTER" />
+    </center>
+</BorderPane>

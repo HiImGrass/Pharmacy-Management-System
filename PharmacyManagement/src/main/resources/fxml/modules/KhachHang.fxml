@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox fx:id="rootKhachHang"
+      prefHeight="650.0"
+      prefWidth="900.0"
+      spacing="18.0"
+      style="-fx-background-color: #f5f8fc; -fx-padding: 24;"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.PharmacyManagement.gui.controller.KhachHangController">
+
+    <children>
+        <!-- HEADER -->
+        <HBox alignment="CENTER_LEFT" spacing="16.0">
+            <children>
+                <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                    <children>
+                        <Label text="QUẢN LÝ KHÁCH HÀNG" textFill="#1d4ed8">
+                            <font>
+                                <Font name="System Bold" size="26.0" />
+                            </font>
+                        </Label>
+                        <Label text="Theo dõi thông tin khách hàng và số điện thoại liên hệ" textFill="#64748b">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </VBox>
+
+                <Button fx:id="btnRefresh"
+                        mnemonicParsing="false"
+                        onAction="#xuLyLamMoi"
+                        prefHeight="42.0"
+                        prefWidth="120.0"
+                        text="Làm mới"
+                        textFill="#1d4ed8"
+                        style="-fx-background-color: #eff6ff; -fx-background-radius: 10; -fx-border-color: #bfdbfe; -fx-border-radius: 10; -fx-border-width: 1.2; -fx-cursor: hand;">
+                    <font>
+                        <Font name="System Bold" size="14.0" />
+                    </font>
+                </Button>
+            </children>
+        </HBox>
+
+        <!-- SUMMARY CARDS -->
+        <HBox spacing="14.0">
+            <children>
+                <VBox prefHeight="105.0" prefWidth="190.0" spacing="9.0"
+                      style="-fx-background-color: #ffffff; -fx-background-radius: 16; -fx-border-color: #dbeafe; -fx-border-radius: 16; -fx-padding: 16; -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.08), 12, 0, 0, 3);">
+                    <children>
+                        <Label text="TỔNG KHÁCH HÀNG" textFill="#64748b">
+                            <font>
+                                <Font name="System Bold" size="12.0" />
+                            </font>
+                        </Label>
+                        <Label fx:id="lblTongKhachHang" text="0" textFill="#1d4ed8">
+                            <font>
+                                <Font name="System Bold" size="28.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </VBox>
+
+                <VBox prefHeight="105.0" prefWidth="190.0" spacing="9.0"
+                      style="-fx-background-color: #ffffff; -fx-background-radius: 16; -fx-border-color: #dcfce7; -fx-border-radius: 16; -fx-padding: 16; -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.08), 12, 0, 0, 3);">
+                    <children>
+                        <Label text="CÓ SỐ ĐIỆN THOẠI" textFill="#64748b">
+                            <font>
+                                <Font name="System Bold" size="12.0" />
+                            </font>
+                        </Label>
+                        <Label fx:id="lblCoSoDienThoai" text="0" textFill="#16a34a">
+                            <font>
+                                <Font name="System Bold" size="28.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </VBox>
+
+            </children>
+        </HBox>
+
+        <!-- FILTER BAR -->
+        <HBox alignment="CENTER_LEFT" spacing="10.0"
+              style="-fx-background-color: #ffffff; -fx-background-radius: 16; -fx-border-color: #e5e7eb; -fx-border-radius: 16; -fx-padding: 14; -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.06), 10, 0, 0, 2);">
+            <children>
+                <TextField fx:id="txtSearch"
+                           prefHeight="42.0"
+                           prefWidth="330.0"
+                           promptText="Nhập tên hoặc số điện thoại để tìm..."
+                           style="-fx-background-color: #f8fafc; -fx-background-radius: 10; -fx-border-color: #cbd5e1; -fx-border-width: 1.2; -fx-border-radius: 10; -fx-text-fill: #0f172a; -fx-prompt-text-fill: #94a3b8; -fx-padding: 0 12 0 12;" />
+
+                <Button fx:id="btnSearch"
+                        mnemonicParsing="false"
+                        onAction="#xuLyTimKiem"
+                        prefHeight="42.0"
+                        prefWidth="105.0"
+                        text="Tìm kiếm"
+                        textFill="#ffffff"
+                        style="-fx-background-color: #2563eb; -fx-background-radius: 10; -fx-cursor: hand;">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font>
+                </Button>
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <Label fx:id="lblKetQua" text="0 kết quả" textFill="#64748b">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font>
+                </Label>
+            </children>
+        </HBox>
+
+        <!-- TABLE -->
+        <TableView fx:id="tableKhachHang"
+                   prefHeight="320.0"
+                   style="-fx-background-color: #ffffff; -fx-control-inner-background: #ffffff; -fx-table-cell-border-color: #e5e7eb; -fx-border-color: #e5e7eb; -fx-border-radius: 14; -fx-background-radius: 14; -fx-text-background-color: #0f172a; -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.06), 10, 0, 0, 2);"
+                   VBox.vgrow="ALWAYS">
+            <placeholder>
+                <Label text="Không có khách hàng" textFill="#94a3b8" />
+            </placeholder>
+            <columns>
+                <TableColumn fx:id="colId" prefWidth="90.0" text="STT" />
+                <TableColumn fx:id="colTen" prefWidth="430.0" text="HỌ VÀ TÊN" />
+                <TableColumn fx:id="colSdt" prefWidth="320.0" text="SỐ ĐIỆN THOẠI" />
+            </columns>
+        </TableView>
+
+        <!-- ACTION BAR -->
+        <HBox alignment="CENTER_RIGHT" spacing="12.0"
+              style="-fx-background-color: #ffffff; -fx-background-radius: 16; -fx-border-color: #e5e7eb; -fx-border-radius: 16; -fx-padding: 14; -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.06), 10, 0, 0, 2);">
+            <children>
+                <Button fx:id="btnThem"
+                        mnemonicParsing="false"
+                        onAction="#xuLyThem"
+                        prefHeight="40.0"
+                        prefWidth="115.0"
+                        text="Thêm mới"
+                        textFill="#ffffff"
+                        style="-fx-background-color: #16a34a; -fx-background-radius: 10; -fx-cursor: hand;">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font>
+                </Button>
+
+                <Button fx:id="btnSua"
+                        mnemonicParsing="false"
+                        onAction="#xuLySua"
+                        prefHeight="40.0"
+                        prefWidth="115.0"
+                        text="Sửa đổi"
+                        textFill="#ffffff"
+                        style="-fx-background-color: #f97316; -fx-background-radius: 10; -fx-cursor: hand;">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font>
+                </Button>
+
+                <Button fx:id="btnXoa"
+                        mnemonicParsing="false"
+                        onAction="#xuLyXoa"
+                        prefHeight="40.0"
+                        prefWidth="115.0"
+                        text="Xóa"
+                        textFill="#ffffff"
+                        style="-fx-background-color: #dc2626; -fx-background-radius: 10; -fx-cursor: hand;">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font>
+                </Button>
+            </children>
+        </HBox>
+    </children>
+</VBox>
