@@ -1,9 +1,24 @@
 package com.example.PharmacyManagement.gui.controller;
 
-//Folders
-import com.example.PharmacyManagement.model.Thuoc;
-import com.example.PharmacyManagement.service.ThuocService;
-//JavaFX
+//Java imports
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.List;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Optional;
+
+//Spring imports
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+
+//JavaFX imports
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -14,23 +29,18 @@ import javafx.application.Platform;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-//Spring
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-//Java
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.util.List;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Optional;
+//Models and services imports
+import com.example.PharmacyManagement.model.Thuoc;
+import com.example.PharmacyManagement.service.ThuocService;
+
+//Component imports
+
+//Utils imports
+import com.example.PharmacyManagement.gui.util.DatePickerFormatter;
+import com.example.PharmacyManagement.gui.util.MoneyFormatter;
+import com.example.PharmacyManagement.gui.util.TableRowFormatter;
+import com.example.PharmacyManagement.gui.util.ExpiryUtils;
+import com.example.PharmacyManagement.gui.util.ExpiryStatus;
 
 @Controller
 public class QuanLyThuocController {
@@ -93,7 +103,14 @@ public class QuanLyThuocController {
         colGiaBanSi.setCellValueFactory(new PropertyValueFactory<>("giaBanSi"));
         colSoLuongTon.setCellValueFactory(new PropertyValueFactory<>("soLuongTon"));
         colHanSuDung.setCellValueFactory(new PropertyValueFactory<>("hanSuDung"));
+        DatePickerFormatter.formatTableColumnLocalDateToVN(colHanSuDung);
+        TableRowFormatter.applyExpiryRowStyle(
+                tableThuoc,
+                Thuoc::getHanSuDung,
+                ExpiryUtils.DEFAULT_WARNING_DAYS);
         colMoTa.setCellValueFactory(new PropertyValueFactory<>("moTa"));
+        MoneyFormatter.formatTableColumnToVN(colGiaNhap);
+        MoneyFormatter.formatTableColumnToVN(colGiaBanSi);
 
         // Make 'Mô Tả' column expand to fill remaining table width
         tableThuoc.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
@@ -217,6 +234,7 @@ public class QuanLyThuocController {
         }
         capNhatThongTinTongQuan(thuocService.getAllThuoc());
     }
+
     /**
      * HÀM TIỆN ÍCH: Tạo hộp thoại nhập thông tin Thuốc (Dùng chung cho cả Thêm và
      * Sửa)
@@ -249,7 +267,8 @@ public class QuanLyThuocController {
 
         // SỬ DỤNG DATEPICKER CHO NGÀY THÁNG
         DatePicker dpHanSuDung = new DatePicker();
-        dpHanSuDung.setPromptText("MM/DD/YYYY");
+        DatePickerFormatter.formatDatePickerToVn(dpHanSuDung); // Áp dụng định dạng ngày tháng Việt Nam
+        dpHanSuDung.setPromptText("dd/MM/yyyy");
 
         TextField txtMoTa = new TextField();
         txtMoTa.setPromptText("Nhập mô tả...");
@@ -593,33 +612,44 @@ public class QuanLyThuocController {
         return null;
     }
 
-    private void capNhatThongTinTongQuan(List<Thuoc> danhSachThuoc) {
-        int tongSoLuong = danhSachThuoc.size(); // Tính tống số lượng thuốc.
-        lblTongMatHang.setText(String.valueOf(tongSoLuong));
-        LocalDate homNay = LocalDate.now();
+    private void capNhatThongTinTongQuan(
+            List<Thuoc> danhSachThuoc) {
+        if (danhSachThuoc == null) {
+            danhSachThuoc = List.of();
+        }
 
-        int tongSoLuongSapHetHang = (int) danhSachThuoc.stream()
-                .filter(t -> t.getSoLuongTon() <= 3)
+        long tongMatHang = danhSachThuoc.stream()
+                .filter(thuoc -> thuoc != null)
                 .count();
 
-        lblSapHetHang.setText(String.valueOf(tongSoLuongSapHetHang));
+        lblTongMatHang.setText(
+                String.valueOf(tongMatHang));
+
+        long tongSoLuongSapHetHang = danhSachThuoc.stream()
+                .filter(thuoc -> thuoc != null)
+                .filter(thuoc -> thuoc.getSoLuongTon() <= 3)
+                .count();
+
+        lblSapHetHang.setText(
+                String.valueOf(tongSoLuongSapHetHang));
 
         long tongSoLuongGanHetHan = danhSachThuoc.stream()
-                .filter(t -> t != null)
-                .filter(t -> t.getHanSuDung() != null)
-                .filter(t -> {
-                    long soNgayConLai = ChronoUnit.DAYS.between(homNay, t.getHanSuDung());
-                    return soNgayConLai >= 0 && soNgayConLai <= 180;
-                })
+                .filter(thuoc -> thuoc != null)
+                .filter(thuoc -> ExpiryUtils.getStatus(
+                        thuoc.getHanSuDung(), ExpiryUtils.DEFAULT_WARNING_DAYS) == ExpiryStatus.EXPIRING_SOON)
                 .count();
-        lblGanHetHan.setText(String.valueOf(tongSoLuongGanHetHan));
+
+        lblGanHetHan.setText(
+                String.valueOf(tongSoLuongGanHetHan));
 
         long tongSoLuongHetHan = danhSachThuoc.stream()
-                .filter(t -> t != null)
-                .filter(t -> t.getHanSuDung() != null)
-                .filter(t -> t.getHanSuDung().isBefore(homNay))
+                .filter(thuoc -> thuoc != null)
+                .filter(thuoc -> ExpiryUtils.getStatus(
+                        thuoc.getHanSuDung(), ExpiryUtils.DEFAULT_WARNING_DAYS) == ExpiryStatus.EXPIRED)
                 .count();
-        lblHetHan.setText(String.valueOf(tongSoLuongHetHan));
+
+        lblHetHan.setText(
+                String.valueOf(tongSoLuongHetHan));
     }
 
     private void cauHinhTimKiemTuDong() {

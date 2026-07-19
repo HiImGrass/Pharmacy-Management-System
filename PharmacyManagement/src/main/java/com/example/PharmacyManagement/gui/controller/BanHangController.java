@@ -1,12 +1,18 @@
 package com.example.PharmacyManagement.gui.controller;
 
-import com.example.PharmacyManagement.gui.component.FxmlLoaderService;
-import com.example.PharmacyManagement.gui.component.FxmlLoaderService.LoadedView;
-import com.example.PharmacyManagement.model.KhachHang;
-import com.example.PharmacyManagement.model.Thuoc;
-import com.example.PharmacyManagement.service.KhachHangService;
-import com.example.PharmacyManagement.service.ThuocService;
+//Java imports
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
+//Spring imports
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+
+//JavaFX imports
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -17,21 +23,26 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.StringConverter;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+//Models and services imports
+import com.example.PharmacyManagement.model.KhachHang;
+import com.example.PharmacyManagement.model.Thuoc;
+import com.example.PharmacyManagement.service.KhachHangService;
+import com.example.PharmacyManagement.service.ThuocService;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+//Component imports
+import com.example.PharmacyManagement.gui.component.FxmlLoaderService;
+import com.example.PharmacyManagement.gui.component.FxmlLoaderService.LoadedView;
+
+//Utils imports
+import com.example.PharmacyManagement.gui.util.DatePickerFormatter;
+import com.example.PharmacyManagement.gui.util.MoneyFormatter;
+import com.example.PharmacyManagement.gui.util.TableRowFormatter;
+import com.example.PharmacyManagement.gui.util.ExpiryUtils;
 
 @Controller
 public class BanHangController {
@@ -154,17 +165,17 @@ public class BanHangController {
         colGiaBanSi.setCellValueFactory(new PropertyValueFactory<>("giaBanSi"));
         colSoLuongTon.setCellValueFactory(new PropertyValueFactory<>("soLuongTon"));
         colHanSuDung.setCellValueFactory(new PropertyValueFactory<>("hanSuDung"));
+        DatePickerFormatter.formatTableColumnLocalDateToVN(colHanSuDung);
+        MoneyFormatter.formatTableColumnToVN(colGiaNhap);
+        MoneyFormatter.formatTableColumnToVN(colGiaBanSi);
+        TableRowFormatter.applyExpiryRowStyle(
+                tableThuoc,
+                Thuoc::getHanSuDung,
+                ExpiryUtils.DEFAULT_WARNING_DAYS,
+                this::themThuocVaoToaDangChon);
 
-        tableThuoc.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        tableThuoc.setRowFactory(tv -> {
-            TableRow<Thuoc> row = new TableRow<>();
-            row.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2 && !row.isEmpty()) {
-                    themThuocVaoToaDangChon(row.getItem());
-                }
-            });
-            return row;
-        });
+        tableThuoc.setColumnResizePolicy(
+                TableView.CONSTRAINED_RESIZE_POLICY);
     }
 
     private void cauHinhSuKienChonKhachHang() {
@@ -230,8 +241,7 @@ public class BanHangController {
         String tenToa = TEN_TOA_MAC_DINH + demSoToa++;
         LoadedView<ChiTietToaController> loadedView = fxmlLoaderService.loadWithController(
                 CHI_TIET_TOA_FXML,
-                ChiTietToaController.class
-        );
+                ChiTietToaController.class);
 
         Tab tabMoi = new Tab(tenToa);
         tabMoi.setContent(loadedView.getView());

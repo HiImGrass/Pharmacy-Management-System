@@ -91,7 +91,7 @@
                 <DatePicker fx:id="dpTuNgay"
                             prefHeight="42.0"
                             prefWidth="162.0"
-                            promptText="mm/dd/yyyy"
+                            promptText="dd/MM/yyyy"
                             style="-fx-background-color: #ffffff; -fx-background-radius: 10; -fx-border-color: #cbd5e1; -fx-border-radius: 10; -fx-text-fill: #0f172a;" />
 
                 <Label text="–" textFill="#64748b">
@@ -103,7 +103,7 @@
                 <DatePicker fx:id="dpDenNgay"
                             prefHeight="42.0"
                             prefWidth="162.0"
-                            promptText="mm/dd/yyyy"
+                            promptText="dd/MM/yyyy"
                             style="-fx-background-color: #ffffff; -fx-background-radius: 10; -fx-border-color: #cbd5e1; -fx-border-radius: 10; -fx-text-fill: #0f172a;" />
 
                 <Button fx:id="btnLamMoi"
@@ -138,7 +138,7 @@
             <columns>
                 <TableColumn fx:id="colStt" prefWidth="45.0" text="#" />
                 <TableColumn fx:id="colMaPhieuNhap" prefWidth="145.0" text="MÃ PHIẾU NHẬP" />
-                <TableColumn fx:id="colNhaCungCap" prefWidth="120.0" text="NHÀ CUNG CẤP" />
+                <TableColumn fx:id="colNhaCungCap" prefWidth="170.0" text="NHÀ CUNG CẤP" />
                 <TableColumn fx:id="colNgayNhap" prefWidth="135.0" text="NGÀY NHẬP" />
                 <TableColumn fx:id="colChiTiet" prefWidth="80.0" text="CHI TIẾT" />
             </columns>

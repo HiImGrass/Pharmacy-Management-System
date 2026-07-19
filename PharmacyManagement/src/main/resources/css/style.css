@@ -1,0 +1,22 @@
+/* Thuốc đã hết hạn */
+.table-row-cell:expired,
+.table-row-cell:expired:odd {
+    -fx-background-color: #fee2e2;
+}
+
+.table-row-cell:expired .table-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #991b1b;
+    -fx-font-weight: bold;
+}
+
+/* Thuốc sắp hết hạn */
+.table-row-cell:expiring-soon,
+.table-row-cell:expiring-soon:odd {
+    -fx-background-color: #fef3c7;
+}
+
+.table-row-cell:expiring-soon .table-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #92400e;
+}

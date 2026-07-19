@@ -1,17 +1,19 @@
 package com.example.PharmacyManagement.gui.controller;
 
-import com.example.PharmacyManagement.gui.component.FxmlLoaderService;
-import com.example.PharmacyManagement.gui.component.FxmlLoaderService.LoadedView;
-import com.example.PharmacyManagement.model.ChiTietHoaDon;
-import com.example.PharmacyManagement.model.Thuoc;
-import com.example.PharmacyManagement.service.PhieuNhapInService;
-import com.example.PharmacyManagement.model.PhieuNhap;
-import com.example.PharmacyManagement.service.PhieuNhapService;
-
+//Java imports
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.math.BigDecimal;
 
+//Spring imports
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+
+//JavaFX imports
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -19,7 +21,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
@@ -28,17 +29,19 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+//Models and services imports
+import com.example.PharmacyManagement.model.ChiTietHoaDon;
+import com.example.PharmacyManagement.model.Thuoc;
+import com.example.PharmacyManagement.model.PhieuNhap;
+import com.example.PharmacyManagement.service.PhieuNhapInService;
+import com.example.PharmacyManagement.service.PhieuNhapService;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+//Component imports
+import com.example.PharmacyManagement.gui.component.FxmlLoaderService;
+import com.example.PharmacyManagement.gui.component.FxmlLoaderService.LoadedView;
+
+//Utils imports
+
 
 @Controller
 public class NhapHangController {
@@ -67,8 +70,6 @@ public class NhapHangController {
 
     @Autowired
     private PhieuNhapService phieuNhapService;
-
-    private int demSoPhieuNhap = 1;
 
     private final Map<Tab, ChiTietToaNhapController> toaControllers = new HashMap<>();
     private final Map<Tab, String> nhaCungCapCuaToa = new HashMap<>();
@@ -263,7 +264,7 @@ public class NhapHangController {
             ketQua.ifPresent(chiTietMoi -> controller.capNhatChiTietNhap(chiTietDangSua, chiTietMoi));
         });
 
-        String tenTab = TEN_TOA_MAC_DINH + demSoPhieuNhap++ + " - " + nhaCungCap;
+        String tenTab = TEN_TOA_MAC_DINH + " - " + nhaCungCap;
         Tab tabMoi = new Tab(tenTab);
         tabMoi.setContent(loadedView.getView());
 

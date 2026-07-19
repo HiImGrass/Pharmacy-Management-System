@@ -1,13 +1,22 @@
 package com.example.PharmacyManagement.gui.controller;
 
-import com.example.PharmacyManagement.dto.ChiTietPhieuNhapRequestDTO;
-import com.example.PharmacyManagement.dto.PhieuNhapRequestDTO;
-import com.example.PharmacyManagement.model.ChiTietHoaDon;
-import com.example.PharmacyManagement.model.PhieuNhap;
-import com.example.PharmacyManagement.model.Thuoc;
-import com.example.PharmacyManagement.repository.ThuocRepository;
-import com.example.PharmacyManagement.service.PhieuNhapService;
+//Java imports
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.function.Consumer;
 
+//Spring imports
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Controller;
+
+//JavaFX imports
 import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -25,21 +34,19 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.util.converter.IntegerStringConverter;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Controller;
+//Models, services and DTO imports
+import com.example.PharmacyManagement.dto.ChiTietPhieuNhapRequestDTO;
+import com.example.PharmacyManagement.dto.PhieuNhapRequestDTO;
+import com.example.PharmacyManagement.model.ChiTietHoaDon;
+import com.example.PharmacyManagement.model.PhieuNhap;
+import com.example.PharmacyManagement.model.Thuoc;
+import com.example.PharmacyManagement.repository.ThuocRepository;
+import com.example.PharmacyManagement.service.PhieuNhapService;
 
-import java.math.BigDecimal;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.function.Consumer;
+//Component imports
+
+//Utils imports
+import com.example.PharmacyManagement.gui.util.MoneyFormatter;
 
 @Controller
 @Scope("prototype")
@@ -196,7 +203,7 @@ public class ChiTietToaNhapController {
     private void cauHinhCotDonGia() {
         colDonGia.setCellValueFactory(cellData -> {
             BigDecimal donGia = cellData.getValue().getDonGia();
-            return new SimpleStringProperty(donGia == null ? "" : dinhDangTien(donGia));
+            return new SimpleStringProperty(donGia == null ? "" : MoneyFormatter.format(donGia));
         });
 
         colDonGia.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -482,7 +489,8 @@ public class ChiTietToaNhapController {
         }
 
         Optional<Thuoc> thuocDaTonTai = thuocRepository
-                .findFirstByTenThuocAndDonViAndGiaNhapAndMoTaIgnoreCase(thuoc.getTenThuoc(), thuoc.getDonVi(), thuoc.getGiaNhap(), thuoc.getMoTa());
+                .findFirstByTenThuocAndDonViAndGiaNhapAndMoTaIgnoreCase(thuoc.getTenThuoc(), thuoc.getDonVi(),
+                        thuoc.getGiaNhap(), thuoc.getMoTa());
 
         if (thuocDaTonTai.isPresent()) {
             Thuoc thuocHienCo = thuocDaTonTai.get();
@@ -525,7 +533,8 @@ public class ChiTietToaNhapController {
                 return false;
             }
 
-            if (thuocRepository.existsByTenThuocAndDonViIgnoreCaseAndGiaNhapAndMoTaIgnoreCase(tenThuoc.trim(), donVi.trim(), thuoc.getGiaNhap(), moTa.trim())) {
+            if (thuocRepository.existsByTenThuocAndDonViIgnoreCaseAndGiaNhapAndMoTaIgnoreCase(tenThuoc.trim(),
+                    donVi.trim(), thuoc.getGiaNhap(), moTa.trim())) {
                 hienThiThongBao(Alert.AlertType.INFORMATION, "Thuốc đã tồn tại",
                         "Thuốc '" + tenThuoc.trim()
                                 + "' đã tồn tại. Hệ thống sẽ cộng thêm vào số lượng tồn hiện có khi lưu.");

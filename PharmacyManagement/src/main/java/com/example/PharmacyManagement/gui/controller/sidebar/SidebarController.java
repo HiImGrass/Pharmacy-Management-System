@@ -1,9 +1,14 @@
 package com.example.PharmacyManagement.gui.controller.sidebar;
 
+// Import statements
 import com.example.PharmacyManagement.gui.controller.ManHinhChinhController;
+
+// Import statements
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+
+//Spring Framework annotations
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
@@ -28,43 +33,72 @@ public class SidebarController {
 
     @Autowired
     @Lazy // Dùng @Lazy để tránh lỗi vòng lặp phụ thuộc (Circular Dependency) khi hai
-    //    // controller tham chiếu nhau
+    // // controller tham chiếu nhau
+
     private ManHinhChinhController manHinhChinhController;
 
+    private static final String BAN_HANG_FXML_PATH = "/fxml/modules/BanHang.fxml";
+    private static final String NHAP_HANG_FXML_PATH = "/fxml/modules/NhapHang.fxml";
+    private static final String TRANG_CHU_FXML_PATH = "/fxml/modules/TrangChu.fxml";
+    private static final String KHACH_HANG_FXML_PATH = "/fxml/modules/KhachHang.fxml";
+    private static final String QUAN_LY_THUOC_FXML_PATH = "/fxml/modules/QuanLyThuoc.fxml";
+    private static final String LICH_SU_BAN_HANG_FXML_PATH = "/fxml/modules/LichSuBanThuoc.fxml";
+    private static final String LICH_SU_NHAP_HANG_FXML_PATH = "/fxml/modules/LichSuNhapThuoc.fxml";
+
+    
     @FXML
     public void handleNavigation(ActionEvent event) {
         Button clickedButton = (Button) event.getSource();
-        String fxmlPath = ""; 
+        String fxmlPath = "";
 
         // Tạo hiệu ứng đổi màu nút được chọn
         clearButtonStyles();
         clickedButton.setStyle("-fx-background-color: #34495e; -fx-text-fill: white; -fx-cursor: hand;");
 
-        // Định tuyến sang thư mục chứa các Modules
-        if (clickedButton == btnTrangChu) {
-            fxmlPath = "/fxml/modules/TrangChu.fxml";
-        } else if (clickedButton == btnQuanLyThuoc) {
-            fxmlPath = "/fxml/modules/QuanLyThuoc.fxml";
-        } else if (clickedButton == btnKhachHang) {
-            fxmlPath = "/fxml/modules/KhachHang.fxml";
-        } else if (clickedButton == btnBanHang) {
-            fxmlPath = "/fxml/modules/BanHang.fxml";
-        } else if (clickedButton == btnNhapHang) {
-            fxmlPath = "/fxml/modules/NhapHang.fxml";
-        } else if (clickedButton == btnLichSuBanHang) {
-            fxmlPath = "/fxml/modules/LichSuBanThuoc.fxml";
-        } else if (clickedButton == btnLichSuNhapHang) {
-            fxmlPath = "/fxml/modules/LichSuNhapThuoc.fxml";
+        fxmlPath = layDuongDanModule(clickedButton);
+
+        if (fxmlPath == null || fxmlPath.isBlank()){
+            return;
         }
 
-        if (!fxmlPath.isEmpty()) {
-            // Ra lệnh cho màn hình chính load module tương ứng vào Center
-            manHinhChinhController.hienThiView(fxmlPath);
+        manHinhChinhController.hienThiView(fxmlPath);
+    }
+
+    private String layDuongDanModule(Button clickedButton) {
+        if (clickedButton == btnTrangChu) {
+            return TRANG_CHU_FXML_PATH;
         }
+
+        if (clickedButton == btnQuanLyThuoc) {
+            return QUAN_LY_THUOC_FXML_PATH;
+        }
+
+        if (clickedButton == btnKhachHang) {
+            return KHACH_HANG_FXML_PATH;
+        }
+
+        if (clickedButton == btnBanHang) {
+            return BAN_HANG_FXML_PATH;
+        }
+
+        if (clickedButton == btnNhapHang) {
+            return NHAP_HANG_FXML_PATH;
+        }
+
+        if (clickedButton == btnLichSuBanHang) {
+            return LICH_SU_BAN_HANG_FXML_PATH;
+        }
+
+        if (clickedButton == btnLichSuNhapHang) {
+            return LICH_SU_NHAP_HANG_FXML_PATH;
+        }
+
+        return null;
     }
 
     private void clearButtonStyles() {
-        Button[] buttons = { btnTrangChu, btnKhachHang, btnQuanLyThuoc, btnBanHang, btnNhapHang, btnLichSuBanHang, btnLichSuNhapHang };
+        Button[] buttons = { btnTrangChu, btnKhachHang, btnQuanLyThuoc, btnBanHang, btnNhapHang, btnLichSuBanHang,
+                btnLichSuNhapHang };
         for (Button btn : buttons) {
             btn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-cursor: hand;");
         }

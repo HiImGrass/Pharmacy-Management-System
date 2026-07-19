@@ -2,23 +2,18 @@ package com.example.PharmacyManagement;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Alert;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import java.io.InputStream;
+import java.util.Locale;
 
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import com.example.PharmacyManagement.gui.component.FxmlLoaderService;
-import com.example.PharmacyManagement.SpringContext;
 import javafx.scene.image.Image;
-import javafx.stage.Stage;
 
 @SpringBootApplication
 public class PharmacyManagementApplication extends Application {
@@ -40,6 +35,8 @@ public class PharmacyManagementApplication extends Application {
     public void start(Stage primaryStage) throws Exception {
         FxmlLoaderService fxmlLoaderService = new FxmlLoaderService();
         Parent root = fxmlLoaderService.load("/fxml/ManHinhChinh.fxml");
+
+        Locale.setDefault(Locale.forLanguageTag("vi-VN"));
 
         primaryStage.setTitle("Hệ thống quản lý nhà thuốc");
         ganIconChoUngDung(primaryStage);
