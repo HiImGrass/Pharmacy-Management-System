@@ -1,18 +1,24 @@
 package com.example.PharmacyManagement.gui.controller;
 
-import com.example.PharmacyManagement.model.KhachHang;
-import com.example.PharmacyManagement.service.KhachHangService;
+//Java imports
+import java.util.List;
+import java.util.Optional;
+//Spring imports
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+//JavaFX imports
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.geometry.Insets;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+//Models and services imports
+import com.example.PharmacyManagement.model.KhachHang;
+import com.example.PharmacyManagement.service.KhachHangService;
+//Component imports
 
-import java.util.List;
-import java.util.Optional;
+//Utils imports
 
 @Controller
 public class KhachHangController {
@@ -279,13 +285,14 @@ public class KhachHangController {
         });
     }
 
-    private boolean kiemTraNhapLieu( KhachHang khachHangMoi ) {
+    private boolean kiemTraNhapLieu(KhachHang khachHangMoi) {
         // Kiểm tra dữ liệu nhập liệu trước khi lưu
-        // Ví dụ: kiểm tra tên khách hàng không được để trống, số điện thoại hợp lệ, v.v.
+        // Ví dụ: kiểm tra tên khách hàng không được để trống, số điện thoại hợp lệ,
+        // v.v.
         if (khachHangMoi.getTenKhachHang() == null || khachHangMoi.getTenKhachHang().trim().isEmpty()) {
             hienThiThongBao(Alert.AlertType.ERROR, "Lỗi nhập liệu", "Họ tên khách hàng không được để trống!");
             return false;
-        }else if (khachHangMoi.getSdt() != null && !khachHangMoi.getSdt().matches("\\d+")) {
+        } else if (khachHangMoi.getSdt() != null && !khachHangMoi.getSdt().matches("\\d+")) {
             hienThiThongBao(Alert.AlertType.ERROR, "Lỗi nhập liệu", "Số điện thoại phải là số!");
             return false;
         }
