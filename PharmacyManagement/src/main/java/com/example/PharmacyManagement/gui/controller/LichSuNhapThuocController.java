@@ -1,8 +1,22 @@
 package com.example.PharmacyManagement.gui.controller;
 
-import com.example.PharmacyManagement.model.PhieuNhap;
-import com.example.PharmacyManagement.service.PhieuNhapService;
+//Java imports
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+import java.io.File;
 
+//Spring imports
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Controller;
+
+//JavaFX imports
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -27,19 +41,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Controller;
+//Component imports
+import com.example.PharmacyManagement.model.PhieuNhap;
+import com.example.PharmacyManagement.service.PhieuNhapService;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
-import java.io.File;
+//Utils imports
+import com.example.PharmacyManagement.gui.util.DatePickerFormatter;
 
 @Controller
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -102,6 +109,9 @@ public class LichSuNhapThuocController {
                 // Hiển thị danh sách ban đầu.
                 apDungBoLoc();
 
+                // Cấu hình DatePicker hiển thị theo định dạng Việt Nam.
+                DatePickerFormatter.formatDatePickerToVn(dpTuNgay);
+                DatePickerFormatter.formatDatePickerToVn(dpDenNgay);
                 // Khi gõ tìm kiếm chỉ lọc danh sách đang có, không gọi database mỗi ký tự.
                 txtSearch.textProperty().addListener(
                                 (observable, oldValue, newValue) -> apDungBoLoc());
@@ -124,30 +134,30 @@ public class LichSuNhapThuocController {
                 apDungBoLoc();
         }
 
-        //MỞ RỘNG TRONG TƯƠNG LAI NẾU CẦN THIẾT.
+        // MỞ RỘNG TRONG TƯƠNG LAI NẾU CẦN THIẾT.
         // @FXML
         // private void xuLyTrangTruoc(ActionEvent event) {
-        //         System.out.println("Đang xử lý chuyển về trang trước...");
+        // System.out.println("Đang xử lý chuyển về trang trước...");
         // }
 
         // @FXML
         // private void xuLyTrangSau(ActionEvent event) {
-        //         System.out.println("Đang xử lý chuyển sang trang sau...");
+        // System.out.println("Đang xử lý chuyển sang trang sau...");
         // }
 
         // @FXML
         // private void xuLyChonTrang1(ActionEvent event) {
-        //         System.out.println("Đang xử lý chọn trang 1...");
+        // System.out.println("Đang xử lý chọn trang 1...");
         // }
 
         // @FXML
         // private void xuLyChonTrang2(ActionEvent event) {
-        //         System.out.println("Đang xử lý chọn trang 2...");
+        // System.out.println("Đang xử lý chọn trang 2...");
         // }
 
         // @FXML
         // private void xuLyTrangCuoi(ActionEvent event) {
-        //         System.out.println("Đang xử lý chuyển đến trang cuối...");
+        // System.out.println("Đang xử lý chuyển đến trang cuối...");
         // }
 
         private void cauHinhBangLichSuPhieuNhap() {
@@ -173,6 +183,7 @@ public class LichSuNhapThuocController {
                 colNgayNhap.setCellValueFactory(
                                 new PropertyValueFactory<>("createdAt"));
 
+                DatePickerFormatter.formatTableColumnLocalDateTimeToVN(colNgayNhap);
                 cauHinhCotXemAnhPhieuNhap();
 
                 tableLichSuNhapHang.setItems(

@@ -1,13 +1,22 @@
 package com.example.PharmacyManagement.gui.controller;
 
-import com.example.PharmacyManagement.dto.ChiTietHoaDonRequestDTO;
-import com.example.PharmacyManagement.dto.HoaDonRequestDTO;
-import com.example.PharmacyManagement.model.ChiTietHoaDon;
-import com.example.PharmacyManagement.model.HoaDon;
-import com.example.PharmacyManagement.model.Thuoc;
-import com.example.PharmacyManagement.service.HoaDonInService;
-import com.example.PharmacyManagement.service.HoaDonService;
+//Java imports
+import java.io.File;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+//Spring imports
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Controller;
+
+//JavaFX imports
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -25,19 +34,20 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.converter.BigDecimalStringConverter;
 import javafx.util.converter.IntegerStringConverter;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Controller;
+//Models, services and DTO imports
+import com.example.PharmacyManagement.dto.ChiTietHoaDonRequestDTO;
+import com.example.PharmacyManagement.dto.HoaDonRequestDTO;
+import com.example.PharmacyManagement.model.ChiTietHoaDon;
+import com.example.PharmacyManagement.model.HoaDon;
+import com.example.PharmacyManagement.model.Thuoc;
+import com.example.PharmacyManagement.service.HoaDonInService;
+import com.example.PharmacyManagement.service.HoaDonService;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.text.NumberFormat;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.stream.Collectors;
+//Component imports
+
+//Utils imports
+
+import com.example.PharmacyManagement.gui.util.MoneyFormatter;
 
 @Controller
 @Scope("prototype")
@@ -157,6 +167,8 @@ public class ChiTietToaController {
         colDonGia.setCellValueFactory(cellData -> new SimpleObjectProperty<>(layDonGiaAnToan(cellData.getValue())));
 
         colDonGia.setCellFactory(TextFieldTableCell.forTableColumn(new BigDecimalStringConverter()));
+        MoneyFormatter.formatTableColumnToVN(colDonGia);
+
         colDonGia.setOnEditCommit(event -> {
             ChiTietHoaDon chiTiet = layDongDangSua(event.getTablePosition().getRow());
             if (chiTiet == null) {
@@ -173,6 +185,7 @@ public class ChiTietToaController {
     private void cauHinhCotHienThi() {
         colDonVi.setCellValueFactory(new PropertyValueFactory<>("donVi"));
         colThanhTien.setCellValueFactory(new PropertyValueFactory<>("thanhTien"));
+        MoneyFormatter.formatTableColumnToVN(colThanhTien);
     }
 
     private void cauHinhTrangTriDongTongCong() {
@@ -317,7 +330,7 @@ public class ChiTietToaController {
             danhSachGoc.clear();
             lamMoiBangVaTinhTong();
 
-            if(canhBaoIn == null) {
+            if (canhBaoIn == null) {
                 hienThiThongBao(
                         Alert.AlertType.INFORMATION,
                         "Thành công",
