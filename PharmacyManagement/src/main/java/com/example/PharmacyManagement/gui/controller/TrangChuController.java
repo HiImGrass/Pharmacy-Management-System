@@ -1,23 +1,31 @@
 package com.example.PharmacyManagement.gui.controller;
 
+//Java imports
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+//Spring imports
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 
+//JavaFX imports
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+
+//Models and services imports
 import com.example.PharmacyManagement.model.HoaDon;
 import com.example.PharmacyManagement.model.Thuoc;
 import com.example.PharmacyManagement.service.HoaDonService;
 import com.example.PharmacyManagement.service.ThuocService;
 
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+//Component imports
+
+//Utils imports
 
 @Controller
 public class TrangChuController {
