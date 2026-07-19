@@ -3,6 +3,7 @@ package com.example.PharmacyManagement.gui.controller;
 //Java imports
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -166,9 +167,39 @@ public class ChiTietToaController {
     private void cauHinhCotDonGia() {
         colDonGia.setCellValueFactory(cellData -> new SimpleObjectProperty<>(layDonGiaAnToan(cellData.getValue())));
 
-        colDonGia.setCellFactory(TextFieldTableCell.forTableColumn(new BigDecimalStringConverter()));
-        MoneyFormatter.formatTableColumnToVN(colDonGia);
+        // Tự cấu hình CellFactory để vừa đảm bảo tính năng Edit, vừa format được tiền
+        // tệ
+        colDonGia.setCellFactory(column -> new TextFieldTableCell<>(new BigDecimalStringConverter()) {
+            @Override
+            public void startEdit() {
+                ChiTietHoaDon rowData = getTableRow() == null ? null : getTableRow().getItem();
+                if (laDongTongCong(rowData)) {
+                    return; // Chặn không cho sửa đơn giá của dòng tổng cộng
+                }
+                super.startEdit();
+            }
 
+            @Override
+            public void updateItem(BigDecimal item, boolean empty) {
+                super.updateItem(item, empty);
+
+                ChiTietHoaDon rowData = getTableRow() == null ? null : getTableRow().getItem();
+                if (empty || item == null || laDongTongCong(rowData)) {
+                    setText(null);
+                    setGraphic(null);
+                    return;
+                }
+
+                // Khi bình thường: hiển thị tiền tệ định dạng Việt Nam (Ví dụ: 745.000 đ)
+                // Khi double click sửa: JavaFX tự động hiển thị số thuần (Ví dụ: 745000) để
+                // dược sĩ dễ gõ số
+                if (!isEditing()) {
+                    setText(MoneyFormatter.format(item));
+                }
+            }
+        });
+
+        // Giữ nguyên đoạn setOnEditCommit xử lý logic của bạn
         colDonGia.setOnEditCommit(event -> {
             ChiTietHoaDon chiTiet = layDongDangSua(event.getTablePosition().getRow());
             if (chiTiet == null) {
@@ -363,14 +394,14 @@ public class ChiTietToaController {
         }
 
         if (lblTongTien != null) {
-            lblTongTien.setText(dinhDangTien(tinhTongTien()));
+            lblTongTien.setText(MoneyFormatter.format(tinhTongTien()));
         }
     }
 
     private Optional<BigDecimal> hoiTienKhachDua(BigDecimal tongTienPhaiTra) {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Xác nhận tiền mặt");
-        dialog.setHeaderText("Tổng tiền cần thanh toán: " + dinhDangTien(tongTienPhaiTra) + " VND");
+        dialog.setHeaderText("Tổng tiền cần thanh toán: " + MoneyFormatter.format(tongTienPhaiTra) + " VND");
         dialog.setContentText("Nhập số tiền khách đưa (VND):");
 
         Optional<String> result = dialog.showAndWait();
@@ -480,12 +511,23 @@ public class ChiTietToaController {
     }
 
     private BigDecimal tinhTongTien() {
-        return danhSachGoc.stream()
+        BigDecimal tongTien = danhSachGoc.stream()
                 .filter(ct -> !laDongTongCong(ct))
-                .map(ChiTietHoaDon::getThanhTien)
-                .filter(thanhTien -> thanhTien != null)
+                .map(ct -> layDonGiaAnToan(ct).multiply(BigDecimal.valueOf(Math.max(ct.getSoLuong(), 0))))
                 .reduce(ZERO, BigDecimal::add);
+        if (tongTien.compareTo(ZERO) <= 0) {
+            tongTien = ZERO;
+        }
+        
+        int soTienLamTron = tongTien.remainder(BigDecimal.valueOf(1000)).intValue();
+
+        if (soTienLamTron >= 500) {
+            tongTien = tongTien.subtract(BigDecimal.valueOf(soTienLamTron)).add(BigDecimal.valueOf(1000));
+        }
+
+        return tongTien; 
     }
+
 
     private BigDecimal layDonGiaAnToan(ChiTietHoaDon chiTiet) {
         return chiTiet != null && chiTiet.getDonGia() != null ? chiTiet.getDonGia() : ZERO;
@@ -502,10 +544,6 @@ public class ChiTietToaController {
 
     private boolean laDongTongCong(ChiTietHoaDon chiTiet) {
         return chiTiet != null && chiTiet.getId() != null && chiTiet.getId() == ID_DONG_TONG_CONG;
-    }
-
-    private String dinhDangTien(BigDecimal soTien) {
-        return tienVietNamFormatter.format(soTien != null ? soTien : ZERO);
     }
 
     public void hienThiThongBao(Alert.AlertType loaiThongBao, String tieuDe, String noiDung) {
