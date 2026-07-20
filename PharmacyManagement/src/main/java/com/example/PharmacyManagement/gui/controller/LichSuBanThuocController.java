@@ -1,6 +1,6 @@
 package com.example.PharmacyManagement.gui.controller;
 
-//Java imports
+// Java imports
 import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.math.BigDecimal;
 
-//Spring imports
+// Spring imports
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
-//JavaFX imports
+// JavaFX imports
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -28,6 +28,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -37,15 +38,18 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 
-//Models and services imports
+// Models and services imports
 import com.example.PharmacyManagement.service.HoaDonService;
+import com.example.PharmacyManagement.service.HoaDonInService;
 import com.example.PharmacyManagement.model.HoaDon;
 
-//Utils imports
+// Utils imports
 import com.example.PharmacyManagement.gui.util.DatePickerFormatter;
 import com.example.PharmacyManagement.gui.util.MoneyFormatter;
+import com.example.PharmacyManagement.gui.util.AlertUtils;
 
 @Controller
 public class LichSuBanThuocController {
@@ -96,6 +100,9 @@ public class LichSuBanThuocController {
         @Autowired
         private HoaDonService hoaDonService;
 
+        @Autowired
+        private HoaDonInService hoaDonInService;
+
         private final ObservableList<HoaDon> danhSachHoaDonGoc = FXCollections.observableArrayList();
 
         @FXML
@@ -133,32 +140,6 @@ public class LichSuBanThuocController {
                 dpDenNgay.setValue(null);
                 apDungBoLoc();
         }
-
-        // MỞ RỘNG TRONG TƯƠNG LAI NẾU CẦN THIẾT
-        // @FXML
-        // private void xuLyTrangTruoc(ActionEvent event) {
-        // System.out.println("Đang xử lý chuyển về trang trước...");
-        // }
-
-        // @FXML
-        // private void xuLyTrangSau(ActionEvent event) {
-        // System.out.println("Đang xử lý chuyển sang trang sau...");
-        // }
-
-        // @FXML
-        // private void xuLyChonTrang1(ActionEvent event) {
-        // System.out.println("Đang xử lý chọn trang 1...");
-        // }
-
-        // @FXML
-        // private void xuLyChonTrang2(ActionEvent event) {
-        // System.out.println("Đang xử lý chọn trang 2...");
-        // }
-
-        // @FXML
-        // private void xuLyTrangCuoi(ActionEvent event) {
-        // System.out.println("Đang xử lý chuyển đến trang cuối...");
-        // }
 
         private void cauHinhBangLichSuHoaDon() {
                 System.out.println("Đang cấu hình bảng lịch sử bán thuốc...");
@@ -342,9 +323,10 @@ public class LichSuBanThuocController {
                 String duongDanAnh = hoaDon.getAnhHoaDonPath();
 
                 if (duongDanAnh == null || duongDanAnh.isBlank()) {
-                        hienThiThongBao(
+                        AlertUtils.hienThiThongBao(
                                         Alert.AlertType.INFORMATION,
                                         "Chưa có ảnh",
+                                        null,
                                         "Hóa đơn này chưa được lưu ảnh.");
                         return;
                 }
@@ -361,9 +343,10 @@ public class LichSuBanThuocController {
                 }
 
                 if (!fileAnh.exists() || !fileAnh.isFile()) {
-                        hienThiThongBao(
+                        AlertUtils.hienThiThongBao(
                                         Alert.AlertType.ERROR,
                                         "Không tìm thấy ảnh",
+                                        null,
                                         "Không tìm thấy file ảnh tại:\n"
                                                         + fileAnh.getAbsolutePath());
                         return;
@@ -408,11 +391,39 @@ public class LichSuBanThuocController {
                                         : "HD" + hoaDon.getId();
 
                         dialog.setTitle("Ảnh hóa đơn " + maHoaDon);
-                        dialog.setHeaderText(
-                                        hoaDon.getTenKhachHang() == null
-                                                        ? maHoaDon
-                                                        : maHoaDon + " - "
-                                                                        + hoaDon.getTenKhachHang());
+
+                        // ================= CẤU HÌNH HEADER SÁT PHẢI =================
+                        String thongTinKhach = hoaDon.getTenKhachHang() == null
+                                        ? maHoaDon
+                                        : maHoaDon + " - " + hoaDon.getTenKhachHang();
+
+                        Label lblHeader = new Label(thongTinKhach);
+                        lblHeader.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
+
+                        Button btnInLai = new Button("🖨 In lại hóa đơn");
+                        btnInLai.setTooltip(new Tooltip("In lại hóa đơn này ra máy in"));
+                        btnInLai.setCursor(Cursor.HAND);
+                        btnInLai.setFocusTraversable(false);
+                        btnInLai.setStyle("""
+                                        -fx-background-color: #2563eb;
+                                        -fx-text-fill: white;
+                                        -fx-font-weight: bold;
+                                        -fx-background-radius: 6;
+                                        -fx-padding: 6px 14px;
+                                        -fx-font-size: 13px;
+                                        """);
+                        btnInLai.setOnAction(e -> inLaiHoaDon(hoaDon));
+
+                        BorderPane headerPane = new BorderPane();
+                        headerPane.setLeft(lblHeader);
+                        headerPane.setRight(btnInLai);
+                        BorderPane.setAlignment(lblHeader, Pos.CENTER_LEFT);
+                        BorderPane.setAlignment(btnInLai, Pos.CENTER_RIGHT);
+                        headerPane.setPadding(new Insets(12, 16, 12, 16));
+                        headerPane.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;");
+
+                        dialog.getDialogPane().setHeader(headerPane);
+                        // =============================================================
 
                         dialog.setResizable(true);
 
@@ -439,30 +450,64 @@ public class LichSuBanThuocController {
                 } catch (Exception e) {
                         e.printStackTrace();
 
-                        hienThiThongBao(
+                        AlertUtils.hienThiThongBao(
                                         Alert.AlertType.ERROR,
                                         "Lỗi mở ảnh",
+                                        null,
                                         "Không thể hiển thị ảnh hóa đơn: "
                                                         + e.getMessage());
                 }
         }
 
-        private void hienThiThongBao(
-                        Alert.AlertType loai,
-                        String tieuDe,
-                        String noiDung) {
-                Alert alert = new Alert(loai);
-                alert.setTitle(tieuDe);
-                alert.setHeaderText(null);
-                alert.setContentText(noiDung);
-
-                if (tableLichSuBanHang.getScene() != null) {
-                        alert.initOwner(
-                                        tableLichSuBanHang
-                                                        .getScene()
-                                                        .getWindow());
+        private void inLaiHoaDon(HoaDon hoaDon) {
+                if (hoaDon == null) {
+                        return;
                 }
 
-                alert.showAndWait();
+                String duongDanAnh = hoaDon.getAnhHoaDonPath();
+
+                if (duongDanAnh == null || duongDanAnh.isBlank()) {
+                        AlertUtils.hienThiThongBao(
+                                        Alert.AlertType.WARNING,
+                                        "Không thể in",
+                                        null,
+                                        "Hóa đơn này chưa được lưu file ảnh hệ thống.");
+                        return;
+                }
+
+                File fileAnh = new File(duongDanAnh);
+
+                // Căn chỉnh lấy đường dẫn tuyệt đối giống logic hiển thị
+                if (!fileAnh.isAbsolute()) {
+                        fileAnh = new File(System.getProperty("user.dir"), duongDanAnh);
+                }
+
+                if (!fileAnh.exists() || !fileAnh.isFile()) {
+                        AlertUtils.hienThiThongBao(
+                                        Alert.AlertType.ERROR,
+                                        "Lỗi file",
+                                        null,
+                                        "Không tìm thấy file ảnh hóa đơn để in.");
+                        return;
+                }
+
+                try {
+                        // Gọi service đã thiết kế sẵn cho máy in Xprinter
+                        hoaDonInService.inAnhHoaDon(fileAnh);
+
+                        AlertUtils.hienThiThongBao(
+                                        Alert.AlertType.INFORMATION,
+                                        "Thành công",
+                                        null,
+                                        "Đã gửi lệnh in lại hóa đơn thành công!");
+                } catch (Exception e) {
+                        e.printStackTrace();
+                        AlertUtils.hienThiThongBao(
+                                        Alert.AlertType.ERROR,
+                                        "Lỗi máy in",
+                                        null,
+                                        "Đã xảy ra lỗi khi in: " + e.getMessage());
+                }
         }
+
 }

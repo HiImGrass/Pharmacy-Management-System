@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.AllArgsConstructor;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -42,6 +45,12 @@ public class ChiTietPhieuNhap {
 
     @Column(name = "don_vi", nullable = false)
     private String donVi;
+
+    @Column(name = "don_gia", nullable = true)
+    private BigDecimal donGia;
+
+    @Column(name = "han_su_dung", nullable = true)
+    private LocalDate hanSuDung;
 
     @Column(name = "mo_ta", nullable = true)
     private String moTa;

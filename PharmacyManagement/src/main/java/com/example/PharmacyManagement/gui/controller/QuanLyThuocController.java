@@ -41,6 +41,7 @@ import com.example.PharmacyManagement.gui.util.MoneyFormatter;
 import com.example.PharmacyManagement.gui.util.TableRowFormatter;
 import com.example.PharmacyManagement.gui.util.ExpiryUtils;
 import com.example.PharmacyManagement.gui.util.ExpiryStatus;
+import com.example.PharmacyManagement.gui.util.AlertUtils;
 
 @Controller
 public class QuanLyThuocController {
@@ -156,10 +157,10 @@ public class QuanLyThuocController {
         ketQua.ifPresent(thuocMoi -> {
             try {
                 thuocService.themThuoc(thuocMoi);
-                hienThiThongBao(Alert.AlertType.INFORMATION, "Thành công", "Đã thêm thuốc mới!");
+                AlertUtils.hienThiThongBao(Alert.AlertType.INFORMATION, "Thành công", null, "Đã thêm thuốc mới!");
                 refreshTable();
             } catch (Exception e) {
-                hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống", "Không thể thêm thuốc: " + e.getMessage());
+                AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống", null, "Không thể thêm thuốc: " + e.getMessage());
             }
         });
         capNhatThongTinTongQuan(thuocService.getAllThuoc());
@@ -174,7 +175,7 @@ public class QuanLyThuocController {
         Thuoc thuocDuocChon = tableThuoc.getSelectionModel().getSelectedItem();
 
         if (thuocDuocChon == null) {
-            hienThiThongBao(Alert.AlertType.WARNING, "Cảnh báo", "Vui lòng chọn một thuốc trong bảng để sửa!");
+            AlertUtils.hienThiThongBao(Alert.AlertType.WARNING, "Cảnh báo", null,"Vui lòng chọn một thuốc trong bảng để sửa!");
             return;
         }
 
@@ -189,10 +190,10 @@ public class QuanLyThuocController {
                 // Giả định hàm lưu của Service tự động hiểu Update khi thực thể có ID sẵn
                 thuocService.suaThuoc(thuocDuocChon.getId(), thuocCapNhat);
 
-                hienThiThongBao(Alert.AlertType.INFORMATION, "Thành công", "Cập nhật thông tin thành công!");
+                AlertUtils.hienThiThongBao(Alert.AlertType.INFORMATION, "Thành công", null, "Cập nhật thông tin thành công!");
                 refreshTable();
             } catch (Exception e) {
-                hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống", "Không thể cập nhật: " + e.getMessage());
+                AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống", null, "Không thể cập nhật: " + e.getMessage());
             }
         });
         System.out.println("Bắt sự kiện sửa");
@@ -207,7 +208,7 @@ public class QuanLyThuocController {
         Thuoc thuocDuocChon = tableThuoc.getSelectionModel().getSelectedItem();
 
         if (thuocDuocChon == null) {
-            hienThiThongBao(Alert.AlertType.WARNING, "Cảnh báo", "Vui lòng chọn một thuốc trong bảng để xóa!");
+            AlertUtils.hienThiThongBao(Alert.AlertType.WARNING, "Cảnh báo", null, "Vui lòng chọn một thuốc trong bảng để xóa!");
             return;
         }
 
@@ -225,10 +226,10 @@ public class QuanLyThuocController {
                 // xoaThuoc hoặc deleteById)
                 thuocService.xoaThuoc(thuocDuocChon.getId());
 
-                hienThiThongBao(Alert.AlertType.INFORMATION, "Thành công", "Đã xóa thuốc thành công!");
+                AlertUtils.hienThiThongBao(Alert.AlertType.INFORMATION, "Thành công", null,"Đã xóa thuốc thành công!");
                 refreshTable();
             } catch (Exception e) {
-                hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống",
+                AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống", null,
                         "Không thể xóa thuốc! (Lưu ý: Có thể thuốc đã có lịch sử hóa đơn bán hàng, không được phép xóa)");
             }
         }
@@ -312,7 +313,7 @@ public class QuanLyThuocController {
                         txtDonVi.getText().trim().isEmpty() || txtGiaNhap.getText().trim().isEmpty() ||
                         txtGiaBanSi.getText().trim().isEmpty()) {
 
-                    hienThiThongBao(Alert.AlertType.ERROR, "Lỗi nhập liệu",
+                    AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi nhập liệu", null,
                             "Vui lòng nhập đầy đủ các trường bắt buộc (Tên, Số lượng, Đơn vị, Giá, Hạn sử dụng)!");
                     return null;
                 }
@@ -332,7 +333,7 @@ public class QuanLyThuocController {
 
                 } catch (NumberFormatException ex) {
                     // Nếu nhập chữ vào ô số lượng hoặc ô giá, sẽ thông báo thay vì crash app
-                    hienThiThongBao(Alert.AlertType.ERROR, "Lỗi định dạng",
+                    AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi định dạng", null,
                             "Vui lòng nhập ĐÚNG ĐỊNH DẠNG SỐ cho phần Số lượng và Giá cả!");
                     return null;
                 }
@@ -346,13 +347,6 @@ public class QuanLyThuocController {
     /**
      * HÀM TIỆN ÍCH: Hiển thị nhanh một popup thông báo lên màn hình
      */
-    private void hienThiThongBao(Alert.AlertType loaiThongBao, String tieuDe, String noiDung) {
-        Alert alert = new Alert(loaiThongBao);
-        alert.setTitle(tieuDe);
-        alert.setHeaderText(null);
-        alert.setContentText(noiDung);
-        alert.showAndWait();
-    }
 
     /**
      * CHỨC NĂNG: XUẤT FILE EXCEL
@@ -433,13 +427,13 @@ public class QuanLyThuocController {
 
                 // Cập nhật lại UI thành công thông qua FX Thread
                 Platform.runLater(() -> {
-                    hienThiThongBao(Alert.AlertType.INFORMATION, "Thành công",
+                    AlertUtils.hienThiThongBao(Alert.AlertType.INFORMATION, "Thành công", null,
                             "Đã xuất dữ liệu ra file Excel thành công!");
                 });
 
             } catch (Exception e) {
                 Platform.runLater(() -> {
-                    hienThiThongBao(Alert.AlertType.ERROR, "Lỗi xuất file", "Có lỗi xảy ra: " + e.getMessage());
+                    AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi xuất file", null, "Có lỗi xảy ra: " + e.getMessage());
                 });
             }
         }).start();
@@ -517,7 +511,7 @@ public class QuanLyThuocController {
                 final int loi = soDongLoi;
 
                 Platform.runLater(() -> {
-                    hienThiThongBao(Alert.AlertType.INFORMATION, "Hoàn tất nhập dữ liệu",
+                    AlertUtils.hienThiThongBao(Alert.AlertType.INFORMATION, "Hoàn tất nhập dữ liệu", null,
                             "Đã thêm thành công: " + thanhCong + " loại thuốc.\nSố dòng lỗi định dạng bị bỏ qua: "
                                     + loi);
                     refreshTable(); // Làm mới lại TableView hiển thị nhà thuốc
@@ -525,7 +519,7 @@ public class QuanLyThuocController {
 
             } catch (Exception e) {
                 Platform.runLater(() -> {
-                    hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống",
+                    AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống", null,
                             "Không thể đọc cấu trúc file Excel: " + e.getMessage());
                 });
             }

@@ -59,6 +59,7 @@ public class PhieuNhapService {
             chiTiet.setThuoc(thuocTrongKho);
             chiTiet.setTenThuoc(thuocTrongKho.getTenThuoc());
             chiTiet.setDonVi(thuocTrongKho.getDonVi());
+            chiTiet.setDonGia(item.getDonGia());
             chiTiet.setMoTa(thuocTrongKho.getMoTa());
             chiTiet.setSoLuong(item.getSoLuong());
 

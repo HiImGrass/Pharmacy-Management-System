@@ -34,10 +34,12 @@ CREATE TABLE IF NOT EXISTS chi_tiet_phieu_nhap (
     id            			INT AUTO_INCREMENT PRIMARY KEY, -- Khóa chính độc lập
     phieu_nhap_id 			INT             NOT NULL,       -- Khóa ngoại (cho phép trùng lặp để tạo quan hệ 1-n)
     
-    thuoc_id      			INT             NULL,
+    thuoc_id      			INT             	NULL,
     ten_thuoc 				VARCHAR(50)		NOT NULL,
     so_luong      			INT             NOT NULL,
 	don_vi					VARCHAR(10)		NOT NULL,
+    don_gia					DECIMAL(15, 2)		NULL,
+    han_su_dung				date				NULL,
 	mo_ta					VARCHAR(50)				,
     
     FOREIGN KEY (phieu_nhap_id) REFERENCES phieu_nhap (id) ON DELETE CASCADE,
