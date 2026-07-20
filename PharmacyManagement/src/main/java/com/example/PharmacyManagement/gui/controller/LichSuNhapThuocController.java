@@ -1,6 +1,6 @@
 package com.example.PharmacyManagement.gui.controller;
 
-//Java imports
+// Java imports
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -10,13 +10,13 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 import java.io.File;
 
-//Spring imports
+// Spring imports
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
-//JavaFX imports
+// JavaFX imports
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -30,6 +30,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -39,14 +40,17 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 
-//Component imports
+// Component imports
 import com.example.PharmacyManagement.model.PhieuNhap;
 import com.example.PharmacyManagement.service.PhieuNhapService;
+import com.example.PharmacyManagement.service.PhieuNhapInService;
 
-//Utils imports
+// Utils imports
 import com.example.PharmacyManagement.gui.util.DatePickerFormatter;
+import com.example.PharmacyManagement.gui.util.AlertUtils;
 
 @Controller
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -94,6 +98,9 @@ public class LichSuNhapThuocController {
         @Autowired
         private PhieuNhapService phieuNhapService;
 
+        @Autowired
+        private PhieuNhapInService phieuNhapInService;
+
         private final ObservableList<PhieuNhap> danhSachPhieuNhapGoc = FXCollections.observableArrayList();
 
         @FXML
@@ -133,32 +140,6 @@ public class LichSuNhapThuocController {
                 taiDuLieuLenBang();
                 apDungBoLoc();
         }
-
-        // MỞ RỘNG TRONG TƯƠNG LAI NẾU CẦN THIẾT.
-        // @FXML
-        // private void xuLyTrangTruoc(ActionEvent event) {
-        // System.out.println("Đang xử lý chuyển về trang trước...");
-        // }
-
-        // @FXML
-        // private void xuLyTrangSau(ActionEvent event) {
-        // System.out.println("Đang xử lý chuyển sang trang sau...");
-        // }
-
-        // @FXML
-        // private void xuLyChonTrang1(ActionEvent event) {
-        // System.out.println("Đang xử lý chọn trang 1...");
-        // }
-
-        // @FXML
-        // private void xuLyChonTrang2(ActionEvent event) {
-        // System.out.println("Đang xử lý chọn trang 2...");
-        // }
-
-        // @FXML
-        // private void xuLyTrangCuoi(ActionEvent event) {
-        // System.out.println("Đang xử lý chuyển đến trang cuối...");
-        // }
 
         private void cauHinhBangLichSuPhieuNhap() {
                 System.out.println("Đang cấu hình bảng lịch sử nhập thuốc...");
@@ -388,20 +369,18 @@ public class LichSuNhapThuocController {
                 });
         }
 
-        private void hienThiAnhPhieuNhap(
-                        PhieuNhap phieuNhap) {
+        private void hienThiAnhPhieuNhap(PhieuNhap phieuNhap) {
                 if (phieuNhap == null) {
                         return;
                 }
 
                 String duongDanAnh = phieuNhap.getAnhHoaDonNhapPath();
 
-                if (duongDanAnh == null
-                                || duongDanAnh.isBlank()) {
-
-                        hienThiThongBaoAnh(
+                if (duongDanAnh == null || duongDanAnh.isBlank()) {
+                        AlertUtils.hienThiThongBao(
                                         Alert.AlertType.INFORMATION,
                                         "Chưa có ảnh",
+                                        null,
                                         "Phiếu nhập này chưa được lưu ảnh.");
                         return;
                 }
@@ -418,9 +397,10 @@ public class LichSuNhapThuocController {
                 }
 
                 if (!fileAnh.exists() || !fileAnh.isFile()) {
-                        hienThiThongBaoAnh(
+                        AlertUtils.hienThiThongBao(
                                         Alert.AlertType.ERROR,
                                         "Không tìm thấy ảnh",
+                                        null,
                                         "Không tìm thấy file ảnh tại:\n"
                                                         + fileAnh.getAbsolutePath());
                         return;
@@ -433,8 +413,7 @@ public class LichSuNhapThuocController {
 
                         if (image.isError()) {
                                 throw new RuntimeException(
-                                                "File ảnh bị lỗi hoặc "
-                                                                + "không đúng định dạng.");
+                                                "File ảnh bị lỗi hoặc không đúng định dạng.");
                         }
 
                         ImageView imageView = new ImageView(image);
@@ -465,15 +444,41 @@ public class LichSuNhapThuocController {
                                         ? ""
                                         : "PN" + phieuNhap.getId();
 
-                        dialog.setTitle(
-                                        "Ảnh phiếu nhập " + maPhieuNhap);
+                        dialog.setTitle("Ảnh phiếu nhập " + maPhieuNhap);
 
-                        dialog.setHeaderText(
-                                        phieuNhap.getNhaCungCap() == null
-                                                        ? maPhieuNhap
-                                                        : maPhieuNhap
-                                                                        + " - "
-                                                                        + phieuNhap.getNhaCungCap());
+                        // ================= CẤU HÌNH HEADER SÁT PHẢI =================
+                        String thongTinNhaCungCap = phieuNhap.getNhaCungCap() == null
+                                        ? maPhieuNhap
+                                        : maPhieuNhap + " - " + phieuNhap.getNhaCungCap();
+
+                        Label lblHeader = new Label(thongTinNhaCungCap);
+                        lblHeader.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
+
+                        Button btnInLai = new Button("🖨 In lại phiếu nhập");
+                        btnInLai.setTooltip(new Tooltip("In lại phiếu nhập này ra máy in"));
+                        btnInLai.setCursor(Cursor.HAND);
+                        btnInLai.setFocusTraversable(false);
+                        btnInLai.setStyle("""
+                                        -fx-background-color: #2563eb;
+                                        -fx-text-fill: white;
+                                        -fx-font-weight: bold;
+                                        -fx-background-radius: 6;
+                                        -fx-padding: 6px 14px;
+                                        -fx-font-size: 13px;
+                                        """);
+                        btnInLai.setOnAction(e -> inLaiPhieuNhap(phieuNhap));
+
+                        BorderPane headerPane = new BorderPane();
+                        headerPane.setLeft(lblHeader);
+                        headerPane.setRight(btnInLai);
+                        BorderPane.setAlignment(lblHeader, Pos.CENTER_LEFT);
+                        BorderPane.setAlignment(btnInLai, Pos.CENTER_RIGHT);
+                        headerPane.setPadding(new Insets(12, 16, 12, 16));
+                        headerPane.setStyle(
+                                        "-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;");
+
+                        dialog.getDialogPane().setHeader(headerPane);
+                        // =============================================================
 
                         dialog.setResizable(true);
 
@@ -492,43 +497,71 @@ public class LichSuNhapThuocController {
                                         .getButtonTypes()
                                         .add(ButtonType.CLOSE);
 
-                        dialog.getDialogPane().setContent(
-                                        scrollPane);
-
-                        dialog.getDialogPane().setPrefSize(
-                                        650,
-                                        750);
+                        dialog.getDialogPane().setContent(scrollPane);
+                        dialog.getDialogPane().setPrefSize(650, 750);
 
                         dialog.showAndWait();
 
                 } catch (Exception e) {
                         e.printStackTrace();
 
-                        hienThiThongBaoAnh(
+                        AlertUtils.hienThiThongBao(
                                         Alert.AlertType.ERROR,
                                         "Lỗi mở ảnh",
+                                        null,
                                         "Không thể hiển thị ảnh phiếu nhập: "
                                                         + e.getMessage());
                 }
         }
 
-        private void hienThiThongBaoAnh(
-                        Alert.AlertType loai,
-                        String tieuDe,
-                        String noiDung) {
-                Alert alert = new Alert(loai);
-
-                alert.setTitle(tieuDe);
-                alert.setHeaderText(null);
-                alert.setContentText(noiDung);
-
-                if (tableLichSuNhapHang.getScene() != null) {
-                        alert.initOwner(
-                                        tableLichSuNhapHang
-                                                        .getScene()
-                                                        .getWindow());
+        private void inLaiPhieuNhap(PhieuNhap phieuNhap) {
+                if (phieuNhap == null) {
+                        return;
                 }
 
-                alert.showAndWait();
+                String duongDanAnh = phieuNhap.getAnhHoaDonNhapPath();
+
+                if (duongDanAnh == null || duongDanAnh.isBlank()) {
+                        AlertUtils.hienThiThongBao(
+                                        Alert.AlertType.WARNING,
+                                        "Không thể in",
+                                        null,
+                                        "Phiếu nhập này chưa được lưu file ảnh hệ thống.");
+                        return;
+                }
+
+                File fileAnh = new File(duongDanAnh);
+
+                // Căn chỉnh lấy đường dẫn tuyệt đối tương tự như logic hiển thị
+                if (!fileAnh.isAbsolute()) {
+                        fileAnh = new File(System.getProperty("user.dir"), duongDanAnh);
+                }
+
+                if (!fileAnh.exists() || !fileAnh.isFile()) {
+                        AlertUtils.hienThiThongBao(
+                                        Alert.AlertType.ERROR,
+                                        "Lỗi file",
+                                        null,
+                                        "Không tìm thấy file ảnh phiếu nhập để in.");
+                        return;
+                }
+
+                try {
+                        // Gọi service đã thiết kế sẵn cho máy in Xprinter
+                        phieuNhapInService.inAnhPhieuNhap(fileAnh);
+
+                        AlertUtils.hienThiThongBao(
+                                        Alert.AlertType.INFORMATION,
+                                        "Thành công",
+                                        null,
+                                        "Đã gửi lệnh in lại phiếu nhập thành công!");
+                } catch (Exception e) {
+                        e.printStackTrace();
+                        AlertUtils.hienThiThongBao(
+                                        Alert.AlertType.ERROR,
+                                        "Lỗi máy in",
+                                        null,
+                                        "Đã xảy ra lỗi khi in: " + e.getMessage());
+                }
         }
 }

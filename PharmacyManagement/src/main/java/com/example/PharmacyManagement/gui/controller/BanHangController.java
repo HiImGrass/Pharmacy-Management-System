@@ -43,6 +43,7 @@ import com.example.PharmacyManagement.gui.util.DatePickerFormatter;
 import com.example.PharmacyManagement.gui.util.MoneyFormatter;
 import com.example.PharmacyManagement.gui.util.TableRowFormatter;
 import com.example.PharmacyManagement.gui.util.ExpiryUtils;
+import com.example.PharmacyManagement.gui.util.AlertUtils;
 
 @Controller
 public class BanHangController {
@@ -232,7 +233,7 @@ public class BanHangController {
             tabPane.getTabs().add(tabMoi);
             tabPane.getSelectionModel().select(tabMoi);
         } catch (Exception e) {
-            hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống", "Không thể tạo toa mới: " + e.getMessage());
+            AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống", null, "Không thể tạo toa mới: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -262,7 +263,7 @@ public class BanHangController {
 
         ChiTietToaController controller = layControllerToaDangChon();
         if (controller == null) {
-            hienThiThongBao(Alert.AlertType.WARNING, "Chưa có toa", "Vui lòng tạo toa mới trước khi thêm thuốc.");
+            AlertUtils.hienThiThongBao(Alert.AlertType.WARNING, "Chưa có toa", null, "Vui lòng tạo toa mới trước khi thêm thuốc.");
             return;
         }
 
@@ -283,7 +284,7 @@ public class BanHangController {
         Tab tabDangChon = layTabDangChon();
 
         if (controller == null || tabDangChon == null) {
-            hienThiThongBao(Alert.AlertType.WARNING, "Chưa có toa", "Vui lòng tạo toa trước khi thanh toán.");
+            AlertUtils.hienThiThongBao(Alert.AlertType.WARNING, "Chưa có toa", null,"Vui lòng tạo toa trước khi thanh toán.");
             return;
         }
 
@@ -329,14 +330,6 @@ public class BanHangController {
             return TEN_KHACH_LE;
         }
         return khachHang.getTenKhachHang();
-    }
-
-    public void hienThiThongBao(Alert.AlertType loaiThongBao, String tieuDe, String noiDung) {
-        Alert alert = new Alert(loaiThongBao);
-        alert.setTitle(tieuDe);
-        alert.setHeaderText(null);
-        alert.setContentText(noiDung);
-        alert.showAndWait();
     }
 
     private void cauHinhTimKiemTuDong() {

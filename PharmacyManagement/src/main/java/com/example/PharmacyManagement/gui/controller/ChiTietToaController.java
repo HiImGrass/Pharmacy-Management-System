@@ -46,8 +46,8 @@ import com.example.PharmacyManagement.service.HoaDonService;
 //Component imports
 
 //Utils imports
-
 import com.example.PharmacyManagement.gui.util.MoneyFormatter;
+import com.example.PharmacyManagement.gui.util.AlertUtils;
 
 @Controller
 @Scope("prototype")
@@ -248,17 +248,17 @@ public class ChiTietToaController {
 
     public boolean xuLyThanhToan(Long khachHangId, String tenKhachHang) {
         if (danhSachGoc.isEmpty()) {
-            hienThiThongBao(Alert.AlertType.WARNING, "Cảnh báo", "Không có thuốc nào trong toa để thanh toán!");
+            AlertUtils.hienThiThongBao(Alert.AlertType.WARNING, "Cảnh báo", null, "Không có thuốc nào trong toa để thanh toán!");
             return false;
         }
 
         if (khachHangId == null) {
-            hienThiThongBao(Alert.AlertType.WARNING, "Cảnh báo", "Vui lòng chọn khách hàng trước khi thanh toán!");
+            AlertUtils.hienThiThongBao(Alert.AlertType.WARNING, "Cảnh báo", null, "Vui lòng chọn khách hàng trước khi thanh toán!");
             return false;
         }
 
         if (tenKhachHang == null || tenKhachHang.isBlank()) {
-            hienThiThongBao(Alert.AlertType.WARNING, "Cảnh báo", "Vui lòng nhập tên khách hàng trước khi thanh toán!");
+            AlertUtils.hienThiThongBao(Alert.AlertType.WARNING, "Cảnh báo", null, "Vui lòng nhập tên khách hàng trước khi thanh toán!");
             return false;
         }
 
@@ -277,9 +277,10 @@ public class ChiTietToaController {
          * và kết quả âm được hiểu là số tiền khách còn nợ.
          */
         if (tienKhachDua.compareTo(ZERO) < 0) {
-            hienThiThongBao(
+            AlertUtils.hienThiThongBao(
                     Alert.AlertType.ERROR,
                     "Lỗi nhập liệu",
+                    null,
                     "Số tiền khách đưa không được nhỏ hơn 0.");
             return false;
         }
@@ -331,14 +332,16 @@ public class ChiTietToaController {
             lamMoiBangVaTinhTong();
 
             if (canhBaoIn == null) {
-                hienThiThongBao(
+                AlertUtils.hienThiThongBao(
                         Alert.AlertType.INFORMATION,
                         "Thành công",
+                        null,
                         "Thanh toán và in hóa đơn thành công!");
             } else {
-                hienThiThongBao(
+                AlertUtils.hienThiThongBao(
                         Alert.AlertType.WARNING,
                         "Cảnh báo",
+                        null,
                         canhBaoIn);
             }
 
@@ -347,9 +350,10 @@ public class ChiTietToaController {
         } catch (Exception e) {
             e.printStackTrace();
 
-            hienThiThongBao(
+            AlertUtils.hienThiThongBao(
                     Alert.AlertType.ERROR,
                     "Lỗi hệ thống",
+                    null,
                     "Có lỗi xảy ra khi thanh toán hoặc in hóa đơn: "
                             + e.getMessage());
 
@@ -385,16 +389,16 @@ public class ChiTietToaController {
 
         String inputDaLoc = input.replace(".", "").replace(",", "").replaceAll("[^0-9]", "");
         if (inputDaLoc.isBlank()) {
-            hienThiThongBao(Alert.AlertType.ERROR, "Lỗi nhập liệu",
-                    "Số tiền nhập vào không hợp lệ! Vui lòng chỉ nhập số.");
+            AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi nhập liệu",
+                    null, "Số tiền nhập vào không hợp lệ! Vui lòng chỉ nhập số.");
             return Optional.empty();
         }
 
         try {
             return Optional.of(new BigDecimal(inputDaLoc));
         } catch (NumberFormatException e) {
-            hienThiThongBao(Alert.AlertType.ERROR, "Lỗi nhập liệu",
-                    "Số tiền nhập vào không hợp lệ! Vui lòng chỉ nhập số.");
+            AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi nhập liệu",
+                    null, "Số tiền nhập vào không hợp lệ! Vui lòng chỉ nhập số.");
             return Optional.empty();
         }
     }
@@ -426,9 +430,10 @@ public class ChiTietToaController {
 
             Integer tonKho = thuoc.getSoLuongTon();
             if (tonKho == null || tonKho < chiTiet.getSoLuong()) {
-                hienThiThongBao(
+                AlertUtils.hienThiThongBao(
                         Alert.AlertType.ERROR,
                         "Lỗi xuất kho",
+                        null,
                         "Thuốc '" + thuoc.getTenThuoc() + "' không đủ số lượng trong kho! Còn tồn: " + tonKho);
                 return false;
             }
@@ -504,6 +509,7 @@ public class ChiTietToaController {
         return chiTiet != null && chiTiet.getId() != null && chiTiet.getId() == ID_DONG_TONG_CONG;
     }
 
+<<<<<<< Updated upstream
     private String dinhDangTien(BigDecimal soTien) {
         return tienVietNamFormatter.format(soTien != null ? soTien : ZERO);
     }
@@ -515,4 +521,6 @@ public class ChiTietToaController {
         alert.setContentText(noiDung);
         alert.showAndWait();
     }
+=======
+>>>>>>> Stashed changes
 }

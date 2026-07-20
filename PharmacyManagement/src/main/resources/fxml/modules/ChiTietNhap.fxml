@@ -73,6 +73,7 @@
                         <TableColumn fx:id="colSoLuong" prefWidth="100.0" text="SỐ LƯỢNG" />
                         <TableColumn fx:id="colDonVi" prefWidth="100.0" text="ĐƠN VỊ" />
                         <TableColumn fx:id="colDonGia" prefWidth="150.0" text="ĐƠN GIÁ NHẬP LẺ" />
+                        <TableColumn fx:id="colHanSuDung" prefWidth="150.0" text="HẠN SỬ DỤNG" />
                         <TableColumn fx:id="colMoTa" prefWidth="260.0" text="MÔ TẢ" />
                         <TableColumn fx:id="colThaoTac" prefWidth="150.0" text="THAO TÁC" />
                     </columns>

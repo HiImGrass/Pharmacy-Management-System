@@ -19,7 +19,7 @@ import com.example.PharmacyManagement.service.KhachHangService;
 //Component imports
 
 //Utils imports
-
+import com.example.PharmacyManagement.gui.util.AlertUtils;
 @Controller
 public class KhachHangController {
 
@@ -102,10 +102,10 @@ public class KhachHangController {
                     return; // Nếu dữ liệu không hợp lệ, dừng lại
                 }
                 khachHangService.themKhachHang(khachHangMoi);
-                hienThiThongBao(Alert.AlertType.INFORMATION, "Thành công", "Đã thêm khách hàng mới!");
+                AlertUtils.hienThiThongBao(Alert.AlertType.INFORMATION, "Thành công", "Đã thêm khách hàng mới thành công!", null);
                 refreshTable();
             } catch (Exception e) {
-                hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống", "Không thể thêm khách hàng: " + e.getMessage());
+                AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống", "Không thể thêm khách hàng: " + e.getMessage(), null);
             }
         });
     }
@@ -119,7 +119,7 @@ public class KhachHangController {
         KhachHang khachHangDuocChon = tableKhachHang.getSelectionModel().getSelectedItem();
 
         if (khachHangDuocChon == null) {
-            hienThiThongBao(Alert.AlertType.WARNING, "Cảnh báo", "Vui lòng chọn một khách hàng trong bảng để sửa!");
+            AlertUtils.hienThiThongBao(Alert.AlertType.WARNING, "Cảnh báo", "Vui lòng chọn một khách hàng trong bảng để sửa!", null);
             return;
         }
 
@@ -138,10 +138,10 @@ public class KhachHangController {
                 // Giả định hàm lưu của Service tự động hiểu Update khi thực thể có ID sẵn
                 khachHangService.themKhachHang(khachHangCapNhat);
 
-                hienThiThongBao(Alert.AlertType.INFORMATION, "Thành công", "Cập nhật thông tin thành công!");
+                AlertUtils.hienThiThongBao(Alert.AlertType.INFORMATION, "Thành công", "Cập nhật thông tin thành công!", null);
                 refreshTable();
             } catch (Exception e) {
-                hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống", "Không thể cập nhật: " + e.getMessage());
+                AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống", "Không thể cập nhật: " + e.getMessage(), null);
             }
         });
     }
@@ -154,7 +154,7 @@ public class KhachHangController {
         KhachHang khachHangDuocChon = tableKhachHang.getSelectionModel().getSelectedItem();
 
         if (khachHangDuocChon == null) {
-            hienThiThongBao(Alert.AlertType.WARNING, "Cảnh báo", "Vui lòng chọn một khách hàng trong bảng để xóa!");
+            AlertUtils.hienThiThongBao(Alert.AlertType.WARNING, "Cảnh báo", "Vui lòng chọn một khách hàng trong bảng để xóa!", null);
             return;
         }
 
@@ -172,11 +172,11 @@ public class KhachHangController {
                 // xoaKhachHang hoặc deleteById)
                 khachHangService.xoaKhachHang(khachHangDuocChon.getId());
 
-                hienThiThongBao(Alert.AlertType.INFORMATION, "Thành công", "Đã xóa khách hàng thành công!");
+                AlertUtils.hienThiThongBao(Alert.AlertType.INFORMATION, "Thành công", "Đã xóa khách hàng thành công!", null);
                 refreshTable();
             } catch (Exception e) {
-                hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống",
-                        "Không thể xóa khách hàng! (Lưu ý: Có thể khách hàng đã có lịch sử hóa đơn bán hàng, không được phép xóa)");
+                AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống",
+                        "Không thể xóa khách hàng! (Lưu ý: Có thể khách hàng đã có lịch sử hóa đơn bán hàng, không được phép xóa)", null);
             }
         }
     }
@@ -226,7 +226,7 @@ public class KhachHangController {
 
                 // Validation cơ bản chống bỏ trống dữ liệu
                 if (ten.isEmpty()) {
-                    hienThiThongBao(Alert.AlertType.ERROR, "Lỗi nhập liệu", "Họ tên không được để trống!");
+                    AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi nhập liệu", "Họ tên không được để trống!", null);
                     return null;
                 }
 
@@ -244,13 +244,6 @@ public class KhachHangController {
     /**
      * HÀM TIỆN ÍCH: Hiển thị nhanh một popup thông báo lên màn hình
      */
-    private void hienThiThongBao(Alert.AlertType loaiThongBao, String tieuDe, String noiDung) {
-        Alert alert = new Alert(loaiThongBao);
-        alert.setTitle(tieuDe);
-        alert.setHeaderText(null);
-        alert.setContentText(noiDung);
-        alert.showAndWait();
-    }
 
     private void capNhatThongTinTongQuan(List<KhachHang> danhSachKhachHang) {
         int tongKhachHang = danhSachKhachHang == null ? 0 : danhSachKhachHang.size();
@@ -290,10 +283,10 @@ public class KhachHangController {
         // Ví dụ: kiểm tra tên khách hàng không được để trống, số điện thoại hợp lệ,
         // v.v.
         if (khachHangMoi.getTenKhachHang() == null || khachHangMoi.getTenKhachHang().trim().isEmpty()) {
-            hienThiThongBao(Alert.AlertType.ERROR, "Lỗi nhập liệu", "Họ tên khách hàng không được để trống!");
+            AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi nhập liệu", "Họ tên khách hàng không được để trống!", null);
             return false;
         } else if (khachHangMoi.getSdt() != null && !khachHangMoi.getSdt().matches("\\d+")) {
-            hienThiThongBao(Alert.AlertType.ERROR, "Lỗi nhập liệu", "Số điện thoại phải là số!");
+            AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi nhập liệu", "Số điện thoại phải là số!", null);
             return false;
         }
 

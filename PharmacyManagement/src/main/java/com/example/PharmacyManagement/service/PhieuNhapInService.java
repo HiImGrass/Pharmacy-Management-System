@@ -1,6 +1,7 @@
 package com.example.PharmacyManagement.service;
 
-import com.example.PharmacyManagement.model.ChiTietHoaDon;
+import com.example.PharmacyManagement.model.ChiTietPhieuNhap;
+import com.example.PharmacyManagement.model.ChiTietPhieuNhap;
 import com.example.PharmacyManagement.model.Thuoc;
 
 import org.springframework.stereotype.Service;
@@ -62,7 +63,7 @@ public class PhieuNhapInService {
      * Dùng khi module nhập hàng chưa có mã phiếu nhập.
      */
     public void inPhieuNhapTrucTiep(
-            List<ChiTietHoaDon> danhSachGoc,
+            List<ChiTietPhieuNhap> danhSachGoc,
             String nhaCungCap,
             String ghiChu) throws IOException, PrinterException {
         inPhieuNhapTrucTiep(danhSachGoc, null, nhaCungCap, ghiChu);
@@ -72,7 +73,7 @@ public class PhieuNhapInService {
      * Dùng khi module nhập hàng đã lưu phiếu nhập và có mã/id phiếu nhập.
      */
     public void inPhieuNhapTrucTiep(
-            List<ChiTietHoaDon> danhSachGoc,
+            List<ChiTietPhieuNhap> danhSachGoc,
             String maPhieuNhap,
             String nhaCungCap,
             String ghiChu) throws IOException, PrinterException {
@@ -89,7 +90,7 @@ public class PhieuNhapInService {
      * Dùng khi chỉ muốn tạo ảnh phiếu nhập, chưa in ngay.
      */
     public File taoAnhPhieuNhap(
-            List<ChiTietHoaDon> danhSachGoc,
+            List<ChiTietPhieuNhap> danhSachGoc,
             String nhaCungCap,
             String ghiChu) throws IOException {
         return taoAnhPhieuNhap(danhSachGoc, null, nhaCungCap, ghiChu);
@@ -100,12 +101,12 @@ public class PhieuNhapInService {
      * Chiều cao ảnh được tính động theo số dòng thuốc.
      */
     public File taoAnhPhieuNhap(
-            List<ChiTietHoaDon> danhSachGoc,
+            List<ChiTietPhieuNhap> danhSachIn,
             String maPhieuNhap,
             String nhaCungCap,
             String ghiChu) throws IOException {
-        if (danhSachGoc == null) {
-            danhSachGoc = Collections.emptyList();
+        if (danhSachIn == null) {
+            danhSachIn = Collections.emptyList();
         }
 
         Font fontShopName = new Font("Arial", Font.BOLD, 30);
@@ -123,7 +124,7 @@ public class PhieuNhapInService {
         tempG2d.setFont(fontTable);
 
         int tableRowsHeight = 0;
-        for (ChiTietHoaDon ct : danhSachGoc) {
+        for (ChiTietPhieuNhap ct : danhSachIn) {
             String tenThuoc = layTenThuoc(ct);
             List<String> lines = tachDong(tenThuoc, tempG2d.getFontMetrics(), tenThuocMaxWidth);
             int rowHeight = Math.max(48, lines.size() * 24 + 18);
@@ -205,7 +206,7 @@ public class PhieuNhapInService {
         int stt = 1;
         int tongSoLuong = 0;
 
-        for (ChiTietHoaDon ct : danhSachGoc) {
+        for (ChiTietPhieuNhap ct : danhSachIn) {
             String tenThuoc = layTenThuoc(ct);
             String donVi = layDonVi(ct);
             int soLuong = laySoLuong(ct);
@@ -387,7 +388,7 @@ public class PhieuNhapInService {
         return mm * 72.0 / 25.4;
     }
 
-    private String layTenThuoc(ChiTietHoaDon ct) {
+    private String layTenThuoc(ChiTietPhieuNhap ct) {
         Thuoc thuoc = ct != null ? ct.getThuoc() : null;
 
         if (thuoc != null && thuoc.getTenThuoc() != null && !thuoc.getTenThuoc().trim().isEmpty()) {
@@ -397,7 +398,7 @@ public class PhieuNhapInService {
         return "Thuốc chưa rõ tên";
     }
 
-    private String layDonVi(ChiTietHoaDon ct) {
+    private String layDonVi(ChiTietPhieuNhap ct) {
         if (ct != null && ct.getDonVi() != null && !ct.getDonVi().trim().isEmpty()) {
             return ct.getDonVi().trim();
         }
@@ -410,7 +411,7 @@ public class PhieuNhapInService {
         return "-";
     }
 
-    private int laySoLuong(ChiTietHoaDon ct) {
+    private int laySoLuong(ChiTietPhieuNhap ct) {
         return ct != null ? Math.max(ct.getSoLuong(), 0) : 0;
     }
 

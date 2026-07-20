@@ -1,8 +1,10 @@
 package com.example.PharmacyManagement.gui.controller;
 
+import com.example.PharmacyManagement.gui.controller.BanHangController;
 //Java imports
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -11,6 +13,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.function.Consumer;
 
+import org.hibernate.mapping.Table;
 //Spring imports
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Controller;
 //JavaFX imports
 import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -26,18 +30,22 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
+import javafx.util.StringConverter;
 import javafx.util.converter.IntegerStringConverter;
 
 //Models, services and DTO imports
 import com.example.PharmacyManagement.dto.ChiTietPhieuNhapRequestDTO;
 import com.example.PharmacyManagement.dto.PhieuNhapRequestDTO;
-import com.example.PharmacyManagement.model.ChiTietHoaDon;
+import com.example.PharmacyManagement.model.ChiTietPhieuNhap;
 import com.example.PharmacyManagement.model.PhieuNhap;
 import com.example.PharmacyManagement.model.Thuoc;
 import com.example.PharmacyManagement.repository.ThuocRepository;
@@ -47,6 +55,8 @@ import com.example.PharmacyManagement.service.PhieuNhapService;
 
 //Utils imports
 import com.example.PharmacyManagement.gui.util.MoneyFormatter;
+import com.example.PharmacyManagement.gui.util.AlertUtils;
+import com.example.PharmacyManagement.gui.util.DatePickerFormatter;
 
 @Controller
 @Scope("prototype")
@@ -55,25 +65,28 @@ public class ChiTietToaNhapController {
     private static final BigDecimal ZERO = BigDecimal.ZERO;
 
     @FXML
-    private TableView<ChiTietHoaDon> tableChiTiet;
+    private TableView<ChiTietPhieuNhap> tableChiTiet;
 
     @FXML
-    private TableColumn<ChiTietHoaDon, String> colTenThuoc;
+    private TableColumn<ChiTietPhieuNhap, String> colTenThuoc;
 
     @FXML
-    private TableColumn<ChiTietHoaDon, Integer> colSoLuong;
+    private TableColumn<ChiTietPhieuNhap, Integer> colSoLuong;
 
     @FXML
-    private TableColumn<ChiTietHoaDon, String> colDonVi;
+    private TableColumn<ChiTietPhieuNhap, String> colDonVi;
 
     @FXML
-    private TableColumn<ChiTietHoaDon, String> colDonGia;
+    private TableColumn<ChiTietPhieuNhap, String> colDonGia;
 
     @FXML
-    private TableColumn<ChiTietHoaDon, String> colMoTa;
+    private TableColumn<ChiTietPhieuNhap, LocalDate> colHanSuDung;
 
     @FXML
-    private TableColumn<ChiTietHoaDon, Void> colThaoTac;
+    private TableColumn<ChiTietPhieuNhap, String> colMoTa;
+
+    @FXML
+    private TableColumn<ChiTietPhieuNhap, Void> colThaoTac;
 
     @Autowired
     private PhieuNhapService phieuNhapService;
@@ -81,9 +94,8 @@ public class ChiTietToaNhapController {
     @Autowired
     private ThuocRepository thuocRepository;
 
-    private final ObservableList<ChiTietHoaDon> danhSachGoc = FXCollections.observableArrayList();
-    private final NumberFormat tienVietNamFormatter = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
-    private Consumer<ChiTietHoaDon> yeuCauSuaChiTiet;
+    private final ObservableList<ChiTietPhieuNhap> danhSachGoc = FXCollections.observableArrayList();
+    private Consumer<ChiTietPhieuNhap> yeuCauSuaChiTiet;
 
     @FXML
     public void initialize() {
@@ -92,6 +104,7 @@ public class ChiTietToaNhapController {
         cauHinhCotSoLuong();
         cauHinhCotDonVi();
         cauHinhCotDonGia();
+        cauHinhCotHanSuDung();
         cauHinhCotMoTa();
         cauHinhCotThaoTac();
     }
@@ -99,11 +112,11 @@ public class ChiTietToaNhapController {
     /**
      * Cho màn hình cha xử lý nút Sửa bằng hộp thoại đang dùng sẵn.
      */
-    public void datXuLySuaChiTiet(Consumer<ChiTietHoaDon> callback) {
+    public void datXuLySuaChiTiet(Consumer<ChiTietPhieuNhap> callback) {
         this.yeuCauSuaChiTiet = callback;
     }
 
-    public List<ChiTietHoaDon> layDanhSachNhapDeIn() {
+    public List<ChiTietPhieuNhap> layDanhSachNhapDeIn() {
         return danhSachGoc.stream()
                 .filter(this::laChiTietCoTheLuu)
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -115,7 +128,7 @@ public class ChiTietToaNhapController {
      */
     @FXML
     public void xuLyThemDong() {
-        ChiTietHoaDon dongMoi = taoDongNhapTrong();
+        ChiTietPhieuNhap dongMoi = taoDongNhapTrong();
         danhSachGoc.add(dongMoi);
 
         int rowIndex = danhSachGoc.size() - 1;
@@ -133,7 +146,7 @@ public class ChiTietToaNhapController {
         tableChiTiet.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tableChiTiet.setRowFactory(tv -> new TableRow<>() {
             @Override
-            protected void updateItem(ChiTietHoaDon item, boolean empty) {
+            protected void updateItem(ChiTietPhieuNhap item, boolean empty) {
                 super.updateItem(item, empty);
                 setStyle(empty || item == null ? "" : "");
             }
@@ -146,14 +159,89 @@ public class ChiTietToaNhapController {
             return new SimpleStringProperty(thuoc == null ? "" : layChuoiAnToan(thuoc.getTenThuoc()));
         });
 
-        colTenThuoc.setCellFactory(TextFieldTableCell.forTableColumn());
+        // Custom CellFactory để bắt phím TAB
+        colTenThuoc.setCellFactory(column -> new TableCell<ChiTietPhieuNhap, String>() {
+            private TextField textField;
+
+            @Override
+            public void startEdit() {
+                super.startEdit();
+                if (textField == null) {
+                    createTextField();
+                }
+                textField.setText(getItem() == null ? "" : getItem());
+                setGraphic(textField);
+                setText(null);
+
+                // Focus và bôi đen text để người dùng dễ gõ đè nếu muốn
+                Platform.runLater(() -> {
+                    textField.requestFocus();
+                    textField.selectAll();
+                });
+            }
+
+            @Override
+            public void cancelEdit() {
+                super.cancelEdit();
+                setText(getItem());
+                setGraphic(null);
+            }
+
+            @Override
+            public void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setText(null);
+                    setGraphic(null);
+                } else if (isEditing()) {
+                    if (textField != null) {
+                        textField.setText(getItem() == null ? "" : getItem());
+                    }
+                    setText(null);
+                    setGraphic(textField);
+                } else {
+                    setText(getItem());
+                    setGraphic(null);
+                }
+            }
+
+            private void createTextField() {
+                textField = new TextField();
+
+                // Lắng nghe sự kiện phím
+                textField.setOnKeyPressed(event -> {
+                    if (event.getCode() == KeyCode.TAB) {
+                        // 1. Lưu giá trị Tên thuốc vừa nhập
+                        commitEdit(textField.getText());
+
+                        int currentRow = getIndex();
+
+                        // 2. Chuyển ngay tiêu điểm sang chỉnh sửa ô Số lượng (colSoLuong)
+                        Platform.runLater(() -> {
+                            tableChiTiet.getSelectionModel().select(currentRow, colSoLuong);
+                            tableChiTiet.edit(currentRow, colSoLuong);
+                        });
+
+                        event.consume(); // Chặn phím Tab mặc định của JavaFX
+                    } else if (event.getCode() == KeyCode.ENTER) {
+                        commitEdit(textField.getText());
+                        event.consume();
+                    } else if (event.getCode() == KeyCode.ESCAPE) {
+                        cancelEdit();
+                        event.consume();
+                    }
+                });
+            }
+        });
+
         colTenThuoc.setOnEditCommit(event -> {
-            ChiTietHoaDon chiTiet = layDongTheoIndex(event.getTablePosition().getRow());
+            ChiTietPhieuNhap chiTiet = layDongTheoIndex(event.getTablePosition().getRow());
             if (chiTiet == null) {
                 return;
             }
 
-            damBaoCoThuoc(chiTiet).setTenThuoc(event.getNewValue());
+            String tenThuocMoi = event.getNewValue() == null ? "" : event.getNewValue().trim();
+            damBaoCoThuoc(chiTiet).setTenThuoc(tenThuocMoi);
             lamMoiBang();
         });
     }
@@ -162,23 +250,106 @@ public class ChiTietToaNhapController {
         colSoLuong.setCellValueFactory(
                 cellData -> new SimpleIntegerProperty(cellData.getValue().getSoLuong()).asObject());
 
-        colSoLuong.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        colSoLuong.setCellFactory(column -> new TableCell<ChiTietPhieuNhap, Integer>() {
+            private TextField textField;
+
+            @Override
+            public void startEdit() {
+                super.startEdit();
+                if (textField == null) {
+                    createTextField();
+                }
+                textField.setText(getItem() == null ? "0" : getItem().toString());
+                setGraphic(textField);
+                setText(null);
+
+                // Focus và bôi đen số lượng để người dùng gõ đè nhanh
+                Platform.runLater(() -> {
+                    textField.requestFocus();
+                    textField.selectAll();
+                });
+            }
+
+            @Override
+            public void cancelEdit() {
+                super.cancelEdit();
+                setText(getItem() == null ? "0" : getItem().toString());
+                setGraphic(null);
+            }
+
+            @Override
+            public void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setText(null);
+                    setGraphic(null);
+                } else if (isEditing()) {
+                    if (textField != null) {
+                        textField.setText(getItem() == null ? "0" : getItem().toString());
+                    }
+                    setText(null);
+                    setGraphic(textField);
+                } else {
+                    setText(getItem() == null ? "0" : getItem().toString());
+                    setGraphic(null);
+                }
+            }
+
+            private void createTextField() {
+                textField = new TextField();
+
+                // CHẶN NHẬP CHỮ: Chỉ cho phép nhập các chữ số (0-9)
+                textField.textProperty().addListener((observable, oldValue, newValue) -> {
+                    if (!newValue.matches("\\d*")) {
+                        textField.setText(newValue.replaceAll("[^\\d]", ""));
+                    }
+                });
+
+                // Lắng nghe phím
+                textField.setOnKeyPressed(event -> {
+                    if (event.getCode() == KeyCode.TAB) {
+                        // 1. Chuyển String -> int rồi mới commit
+                        commitEdit(chuyenSangSo(textField.getText()));
+
+                        int currentRow = getIndex();
+
+                        // 2. Chuyển sang edit ô Đơn vị (colDonVi)
+                        Platform.runLater(() -> {
+                            tableChiTiet.getSelectionModel().select(currentRow, colDonVi);
+                            tableChiTiet.edit(currentRow, colDonVi);
+                        });
+
+                        event.consume();
+                    } else if (event.getCode() == KeyCode.ENTER) {
+                        commitEdit(chuyenSangSo(textField.getText()));
+                        event.consume();
+                    } else if (event.getCode() == KeyCode.ESCAPE) {
+                        cancelEdit();
+                        event.consume();
+                    }
+                });
+            }
+
+            // Hàm hỗ trợ ép kiểu an toàn, tránh crash ứng dụng khi để trống
+            private int chuyenSangSo(String text) {
+                if (text == null || text.trim().isEmpty()) {
+                    return 0;
+                }
+                try {
+                    return Integer.parseInt(text.trim());
+                } catch (NumberFormatException e) {
+                    return getItem() != null ? getItem() : 0;
+                }
+            }
+        });
+
+        // CẬP NHẬT MODEL: Lưu Số lượng mới vào đối tượng ChiTietPhieuNhap
         colSoLuong.setOnEditCommit(event -> {
-            ChiTietHoaDon chiTiet = layDongTheoIndex(event.getTablePosition().getRow());
-            Integer soLuongMoi = event.getNewValue();
-
-            if (chiTiet == null) {
-                return;
+            ChiTietPhieuNhap chiTiet = layDongTheoIndex(event.getTablePosition().getRow());
+            if (chiTiet != null) {
+                chiTiet.setSoLuong(event.getNewValue());
+                lamMoiBang();
             }
-
-            if (soLuongMoi == null || soLuongMoi <= 0) {
-                danhSachGoc.remove(chiTiet);
-            } else {
-                chiTiet.setSoLuong(soLuongMoi);
-                capNhatThanhTien(chiTiet);
-            }
-
-            lamMoiBang();
         });
     }
 
@@ -186,9 +357,82 @@ public class ChiTietToaNhapController {
         colDonVi.setCellValueFactory(
                 cellData -> new SimpleStringProperty(layChuoiAnToan(cellData.getValue().getDonVi())));
 
-        colDonVi.setCellFactory(TextFieldTableCell.forTableColumn());
+        colDonVi.setCellFactory(column -> new TableCell<ChiTietPhieuNhap, String>() {
+            private TextField textField;
+
+            @Override
+            public void startEdit() {
+                super.startEdit();
+                if (textField == null) {
+                    createTextField();
+                }
+                textField.setText(getItem() == null ? "" : getItem());
+                setGraphic(textField);
+                setText(null);
+
+                // Focus và bôi đen text để người dùng dễ gõ đè nếu muốn
+                Platform.runLater(() -> {
+                    textField.requestFocus();
+                    textField.selectAll();
+                });
+            }
+
+            @Override
+            public void cancelEdit() {
+                super.cancelEdit();
+                setText(getItem());
+                setGraphic(null);
+            }
+
+            @Override
+            public void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setText(null);
+                    setGraphic(null);
+                } else if (isEditing()) {
+                    if (textField != null) {
+                        textField.setText(getItem() == null ? "" : getItem());
+                    }
+                    setText(null);
+                    setGraphic(textField);
+                } else {
+                    setText(getItem());
+                    setGraphic(null);
+                }
+            }
+
+            private void createTextField() {
+                textField = new TextField();
+
+                // Lắng nghe sự kiện phím
+                textField.setOnKeyPressed(event -> {
+                    if (event.getCode() == KeyCode.TAB) {
+                        // 1. Lưu giá trị Đơn vị vừa nhập
+                        commitEdit(textField.getText());
+
+                        int currentRow = getIndex();
+
+                        // 2. Chuyển sang edit Đơn giá (colDonGia)
+                        Platform.runLater(() -> {
+                            tableChiTiet.getSelectionModel().select(currentRow, colDonGia);
+                            tableChiTiet.edit(currentRow, colDonGia);
+                        });
+
+                        event.consume();
+                    } else if (event.getCode() == KeyCode.ENTER) {
+                        commitEdit(textField.getText());
+                        event.consume();
+                    } else if (event.getCode() == KeyCode.ESCAPE) {
+                        cancelEdit();
+                        event.consume();
+                    }
+                });
+            }
+        });
+
         colDonVi.setOnEditCommit(event -> {
-            ChiTietHoaDon chiTiet = layDongTheoIndex(event.getTablePosition().getRow());
+            ChiTietPhieuNhap chiTiet = layDongTheoIndex(event.getTablePosition().getRow());
             if (chiTiet == null) {
                 return;
             }
@@ -196,7 +440,7 @@ public class ChiTietToaNhapController {
             String donViMoi = event.getNewValue() == null ? "" : event.getNewValue().trim();
             chiTiet.setDonVi(donViMoi);
             damBaoCoThuoc(chiTiet).setDonVi(donViMoi);
-            lamMoiBang();
+            // lamMoiBang();
         });
     }
 
@@ -205,10 +449,10 @@ public class ChiTietToaNhapController {
             BigDecimal donGia = cellData.getValue().getDonGia();
             return new SimpleStringProperty(donGia == null ? "" : MoneyFormatter.format(donGia));
         });
-
+        colDonGia.setEditable(true);
         colDonGia.setCellFactory(TextFieldTableCell.forTableColumn());
         colDonGia.setOnEditCommit(event -> {
-            ChiTietHoaDon chiTiet = layDongTheoIndex(event.getTablePosition().getRow());
+            ChiTietPhieuNhap chiTiet = layDongTheoIndex(event.getTablePosition().getRow());
             if (chiTiet == null) {
                 return;
             }
@@ -221,15 +465,101 @@ public class ChiTietToaNhapController {
                     throw new NumberFormatException("Giá nhập không được âm.");
                 }
             } catch (NumberFormatException e) {
-                hienThiThongBao(Alert.AlertType.ERROR, "Lỗi dữ liệu", "Giá nhập không hợp lệ: " + giaNhapStr);
+                AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi dữ liệu", null,
+                        "Giá nhập không hợp lệ: " + giaNhapStr);
                 lamMoiBang();
                 return;
             }
 
             chiTiet.setDonGia(giaNhapMoi);
             damBaoCoThuoc(chiTiet).setGiaNhap(giaNhapMoi);
-            capNhatThanhTien(chiTiet);
             lamMoiBang();
+        });
+    }
+
+    private void cauHinhCotHanSuDung() {
+        colHanSuDung.setCellValueFactory(cellData -> {
+            ChiTietPhieuNhap chiTiet = cellData.getValue();
+            return new SimpleObjectProperty<>(chiTiet != null ? chiTiet.getHanSuDung() : null);
+        });
+
+        colHanSuDung.setCellFactory(cellData -> new TableCell<ChiTietPhieuNhap, LocalDate>() {
+            private final DatePicker datePicker = new DatePicker();
+
+            @Override
+            public void startEdit() {
+                super.startEdit();
+                datePicker.setValue(getItem());
+                setGraphic(datePicker);
+                setText(null);
+
+                // Focus và mở popup lịch khi bắt đầu edit
+                Platform.runLater(() -> {
+                    datePicker.requestFocus();
+                    datePicker.show();
+                });
+            }
+
+            {
+                datePicker.setEditable(true);
+
+                DatePickerFormatter.formatDatePickerToVn(datePicker);
+
+                datePicker.setMaxWidth(Double.MAX_VALUE);
+
+                // Bắt sự kiện khi chọn ngày từ lịch popup (Action event)
+                datePicker.setOnAction(event -> {
+                    ChiTietPhieuNhap chiTiet = getTableRow() != null ? getTableRow().getItem() : null;
+                    if (chiTiet != null) {
+                        chiTiet.setHanSuDung(datePicker.getValue());
+                        damBaoCoThuoc(chiTiet).setHanSuDung(datePicker.getValue());
+                    }
+                });
+
+                datePicker.getEditor().setOnKeyPressed(event -> {
+                    if (event.getCode() == KeyCode.TAB) {
+                        // 1. Tự động parse chuỗi ngày gõ tay (nếu có) thành LocalDate
+                        try {
+                            String text = datePicker.getEditor().getText();
+                            if (text != null && !text.trim().isEmpty()) {
+                                LocalDate parsedDate = datePicker.getConverter().fromString(text);
+                                datePicker.setValue(parsedDate);
+                            }
+                        } catch (Exception ignored) {
+                        }
+
+                        // 2. Lưu giá trị vào Model
+                        ChiTietPhieuNhap chiTiet = getTableRow() != null ? getTableRow().getItem() : null;
+                        if (chiTiet != null) {
+                            chiTiet.setHanSuDung(datePicker.getValue());
+                            damBaoCoThuoc(chiTiet).setHanSuDung(datePicker.getValue());
+                        }
+
+                        datePicker.hide();
+
+                        int currentRow = getIndex();
+
+                        Platform.runLater(() -> {
+                            tableChiTiet.getSelectionModel().select(currentRow, colMoTa);
+                            tableChiTiet.edit(currentRow, colMoTa);
+                        });
+
+                        event.consume();
+                    }
+                });
+            }
+
+            @Override
+            protected void updateItem(LocalDate item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    datePicker.setValue(item);
+                    setGraphic(datePicker);
+                }
+            }
         });
     }
 
@@ -239,9 +569,87 @@ public class ChiTietToaNhapController {
             return new SimpleStringProperty(thuoc == null ? "" : layChuoiAnToan(thuoc.getMoTa()));
         });
 
-        colMoTa.setCellFactory(TextFieldTableCell.forTableColumn());
+        colMoTa.setCellFactory(column -> new TableCell<ChiTietPhieuNhap, String>() {
+            private TextField textField;
+
+            @Override
+            public void startEdit() {
+                super.startEdit();
+                if (textField == null) {
+                    createTextField();
+                }
+                textField.setText(getItem() == null ? "" : getItem());
+                setGraphic(textField);
+                setText(null);
+
+                // Focus và bôi đen text để người dùng dễ gõ đè nếu muốn
+                Platform.runLater(() -> {
+                    textField.requestFocus();
+                    textField.selectAll();
+                });
+            }
+
+            @Override
+            public void cancelEdit() {
+                super.cancelEdit();
+                setText(getItem());
+                setGraphic(null);
+            }
+
+            @Override
+            public void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setText(null);
+                    setGraphic(null);
+                } else if (isEditing()) {
+                    if (textField != null) {
+                        textField.setText(getItem() == null ? "" : getItem());
+                    }
+                    setText(null);
+                    setGraphic(textField);
+                } else {
+                    setText(getItem());
+                    setGraphic(null);
+                }
+            }
+
+            private void createTextField() {
+                textField = new TextField();
+
+                // Lắng nghe sự kiện phím
+                textField.setOnKeyPressed(event -> {
+                    if (event.getCode() == KeyCode.TAB) {
+                        // 1. Lưu giá trị Mô tả vừa nhập
+                        commitEdit(textField.getText());
+
+                        int currentRow = getIndex();
+
+                        // 2. Chuyển sang edit ô Tên thuốc (colTenThuoc) của dòng tiếp theo
+                        Platform.runLater(() -> {
+                            int nextRow = currentRow + 1;
+                            if (nextRow < tableChiTiet.getItems().size()) {
+                                tableChiTiet.getSelectionModel().select(nextRow, colTenThuoc);
+                                tableChiTiet.edit(nextRow, colTenThuoc);
+                            } else {
+                                // Nếu là dòng cuối cùng, thêm một dòng mới và edit ô Tên thuốc
+                                xuLyThemDong();
+                            }
+                        });
+
+                        event.consume(); // Chặn phím Tab mặc định của JavaFX
+                    } else if (event.getCode() == KeyCode.ENTER) {
+                        commitEdit(textField.getText());
+                        event.consume();
+                    } else if (event.getCode() == KeyCode.ESCAPE) {
+                        cancelEdit();
+                        event.consume();
+                    }
+                });
+            }
+        });
         colMoTa.setOnEditCommit(event -> {
-            ChiTietHoaDon chiTiet = layDongTheoIndex(event.getTablePosition().getRow());
+            ChiTietPhieuNhap chiTiet = layDongTheoIndex(event.getTablePosition().getRow());
             if (chiTiet == null) {
                 return;
             }
@@ -252,7 +660,7 @@ public class ChiTietToaNhapController {
     }
 
     private void cauHinhCotThaoTac() {
-        colThaoTac.setCellFactory(column -> new TableCell<ChiTietHoaDon, Void>() {
+        colThaoTac.setCellFactory(column -> new TableCell<ChiTietPhieuNhap, Void>() {
             private final Button btnThem = taoNutThaoTac("＋", "#16a34a", "Thêm dòng thuốc");
             private final Button btnSua = taoNutThaoTac("✎", "#f97316", "Sửa thuốc");
             private final Button btnXoa = taoNutThaoTac("×", "#dc2626", "Xóa thuốc");
@@ -262,12 +670,12 @@ public class ChiTietToaNhapController {
                 hopThaoTac.setAlignment(Pos.CENTER);
 
                 btnThem.setOnAction(event -> {
-                    ChiTietHoaDon dong = layDongCuaO();
+                    ChiTietPhieuNhap dong = layDongCuaO();
                     themDongSauDong(dong);
                 });
 
                 btnSua.setOnAction(event -> {
-                    ChiTietHoaDon dong = layDongCuaO();
+                    ChiTietPhieuNhap dong = layDongCuaO();
                     if (dong != null) {
                         if (yeuCauSuaChiTiet != null) {
                             yeuCauSuaChiTiet.accept(dong);
@@ -280,7 +688,7 @@ public class ChiTietToaNhapController {
                 btnXoa.setOnAction(event -> xoaDong(layDongCuaO()));
             }
 
-            private ChiTietHoaDon layDongCuaO() {
+            private ChiTietPhieuNhap layDongCuaO() {
                 int index = getIndex();
                 if (index < 0 || index >= getTableView().getItems().size()) {
                     return null;
@@ -314,7 +722,7 @@ public class ChiTietToaNhapController {
         return button;
     }
 
-    private void themDongSauDong(ChiTietHoaDon dongHienTai) {
+    private void themDongSauDong(ChiTietPhieuNhap dongHienTai) {
         if (dongHienTai == null) {
             xuLyThemDong();
             return;
@@ -326,12 +734,12 @@ public class ChiTietToaNhapController {
             return;
         }
 
-        ChiTietHoaDon dongMoi = taoDongNhapTrong();
+        ChiTietPhieuNhap dongMoi = taoDongNhapTrong();
         danhSachGoc.add(index + 1, dongMoi);
         chonVaMoNhapDong(danhSachGoc.indexOf(dongMoi));
     }
 
-    private void batDauSuaDongInline(ChiTietHoaDon dong) {
+    private void batDauSuaDongInline(ChiTietPhieuNhap dong) {
         int index = danhSachGoc.indexOf(dong);
         if (index >= 0) {
             chonVaMoNhapDong(index);
@@ -344,7 +752,7 @@ public class ChiTietToaNhapController {
         Platform.runLater(() -> tableChiTiet.edit(rowIndex, colTenThuoc));
     }
 
-    private void xoaDong(ChiTietHoaDon dong) {
+    private void xoaDong(ChiTietPhieuNhap dong) {
         if (dong == null) {
             return;
         }
@@ -353,27 +761,25 @@ public class ChiTietToaNhapController {
         lamMoiBang();
     }
 
-    public void themChiTietNhap(ChiTietHoaDon chiTietMoi) {
+    public void themChiTietNhap(ChiTietPhieuNhap chiTietMoi) {
         if (chiTietMoi == null || chiTietMoi.getThuoc() == null) {
             return;
         }
 
-        ChiTietHoaDon chiTietTonTai = timChiTietTrung(chiTietMoi);
+        ChiTietPhieuNhap chiTietTonTai = timChiTietTrung(chiTietMoi);
         if (chiTietTonTai != null) {
             chiTietTonTai.setSoLuong(chiTietTonTai.getSoLuong() + chiTietMoi.getSoLuong());
             chiTietTonTai.setDonGia(layDonGiaAnToan(chiTietMoi));
             capNhatThongTinThuoc(chiTietTonTai, chiTietMoi.getThuoc());
-            capNhatThanhTien(chiTietTonTai);
             lamMoiBang();
             return;
         }
 
-        capNhatThanhTien(chiTietMoi);
         danhSachGoc.add(chiTietMoi);
         lamMoiBang();
     }
 
-    public void capNhatChiTietNhap(ChiTietHoaDon chiTietCu, ChiTietHoaDon chiTietMoi) {
+    public void capNhatChiTietNhap(ChiTietPhieuNhap chiTietCu, ChiTietPhieuNhap chiTietMoi) {
         if (chiTietCu == null || chiTietMoi == null) {
             return;
         }
@@ -382,18 +788,18 @@ public class ChiTietToaNhapController {
         chiTietCu.setSoLuong(chiTietMoi.getSoLuong());
         chiTietCu.setDonVi(chiTietMoi.getDonVi());
         chiTietCu.setDonGia(layDonGiaAnToan(chiTietMoi));
-        capNhatThanhTien(chiTietCu);
         lamMoiBang();
     }
 
-    public ChiTietHoaDon layDongDuocChon() {
+    public ChiTietPhieuNhap layDongDuocChon() {
         return tableChiTiet == null ? null : tableChiTiet.getSelectionModel().getSelectedItem();
     }
 
     public void xoaDongDuocChon() {
-        ChiTietHoaDon hangDuocChon = layDongDuocChon();
+        ChiTietPhieuNhap hangDuocChon = layDongDuocChon();
         if (hangDuocChon == null) {
-            hienThiThongBao(Alert.AlertType.WARNING, "Chưa chọn thuốc", "Vui lòng chọn dòng thuốc cần xóa.");
+            AlertUtils.hienThiThongBao(Alert.AlertType.WARNING, "Chưa chọn thuốc", null,
+                    "Vui lòng chọn dòng thuốc cần xóa.");
             return;
         }
 
@@ -418,7 +824,8 @@ public class ChiTietToaNhapController {
 
     private PhieuNhap luuNhapHangNoiBo(String nhaCungCap, String ghiChu, boolean hienThiThongBaoThanhCong) {
         if (danhSachGoc.stream().noneMatch(this::laChiTietCoTheLuu)) {
-            hienThiThongBao(Alert.AlertType.WARNING, "Cảnh báo", "Không có thuốc nào trong phiếu nhập.");
+            AlertUtils.hienThiThongBao(Alert.AlertType.WARNING, "Cảnh báo", null,
+                    "Không có thuốc nào trong phiếu nhập.");
             return null;
         }
 
@@ -430,25 +837,25 @@ public class ChiTietToaNhapController {
             PhieuNhapRequestDTO request = taoPhieuNhapRequest(nhaCungCap, ghiChu);
 
             PhieuNhap phieuNhapDaLuu = phieuNhapService.nhapHangVaoKho(request);
-            String tongTien = dinhDangTien(tinhTongTien());
             danhSachGoc.clear();
             lamMoiBang();
 
             if (hienThiThongBaoThanhCong) {
-                hienThiThongBao(
+                AlertUtils.hienThiThongBao(
                         Alert.AlertType.INFORMATION,
                         "Thành công",
-                        "Đã lưu phiếu nhập kho thành công. Tổng tiền nhập: "
-                                + tongTien + " VND");
+                        null,
+                        "Đã lưu phiếu nhập kho thành công !!");
             }
 
             return phieuNhapDaLuu;
 
         } catch (Exception e) {
             e.printStackTrace();
-            hienThiThongBao(
+            AlertUtils.hienThiThongBao(
                     Alert.AlertType.ERROR,
                     "Lỗi hệ thống",
+                    null,
                     "Có lỗi xảy ra khi lưu phiếu nhập: " + e.getMessage());
             return null;
         }
@@ -467,7 +874,7 @@ public class ChiTietToaNhapController {
         return request;
     }
 
-    private ChiTietPhieuNhapRequestDTO taoChiTietPhieuNhapRequest(ChiTietHoaDon chiTiet) {
+    private ChiTietPhieuNhapRequestDTO taoChiTietPhieuNhapRequest(ChiTietPhieuNhap chiTiet) {
         Thuoc thuocDaCoId = damBaoThuocDaCoTrongDatabase(chiTiet);
         chiTiet.setThuoc(thuocDaCoId);
 
@@ -478,7 +885,7 @@ public class ChiTietToaNhapController {
         return item;
     }
 
-    private Thuoc damBaoThuocDaCoTrongDatabase(ChiTietHoaDon chiTiet) {
+    private Thuoc damBaoThuocDaCoTrongDatabase(ChiTietPhieuNhap chiTiet) {
         Thuoc thuoc = chiTiet.getThuoc();
         if (thuoc == null) {
             throw new IllegalArgumentException("Dòng nhập thiếu thông tin thuốc.");
@@ -511,7 +918,7 @@ public class ChiTietToaNhapController {
     }
 
     private boolean kiemTraDuLieuHopLe() {
-        for (ChiTietHoaDon chiTiet : danhSachGoc) {
+        for (ChiTietPhieuNhap chiTiet : danhSachGoc) {
             // Dòng được tạo bằng nút "+" nhưng chưa nhập gì được bỏ qua.
             if (laDongNhapTrong(chiTiet)) {
                 continue;
@@ -523,25 +930,25 @@ public class ChiTietToaNhapController {
             String moTa = thuoc == null ? "" : layChuoiAnToan(thuoc.getMoTa());
 
             if (thuoc == null || tenThuoc.isBlank()) {
-                hienThiThongBao(Alert.AlertType.ERROR, "Lỗi dữ liệu", "Có dòng chưa nhập tên thuốc.");
+                AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi dữ liệu", null, "Có dòng chưa nhập tên thuốc.");
                 return false;
             }
 
             if (donVi.isBlank()) {
-                hienThiThongBao(Alert.AlertType.ERROR, "Lỗi dữ liệu",
+                AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi dữ liệu", null,
                         "Vui lòng nhập đơn vị cho thuốc '" + tenThuoc.trim() + "'.");
                 return false;
             }
 
             if (thuocRepository.existsByTenThuocAndDonViIgnoreCaseAndGiaNhapAndMoTaIgnoreCase(tenThuoc.trim(),
                     donVi.trim(), thuoc.getGiaNhap(), moTa.trim())) {
-                hienThiThongBao(Alert.AlertType.INFORMATION, "Thuốc đã tồn tại",
+                AlertUtils.hienThiThongBao(Alert.AlertType.INFORMATION, "Thuốc đã tồn tại", null,
                         "Thuốc '" + tenThuoc.trim()
                                 + "' đã tồn tại. Hệ thống sẽ cộng thêm vào số lượng tồn hiện có khi lưu.");
             }
 
             if (chiTiet.getSoLuong() <= 0) {
-                hienThiThongBao(Alert.AlertType.ERROR, "Lỗi dữ liệu",
+                AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi dữ liệu", null,
                         "Số lượng nhập của thuốc '" + tenThuoc.trim() + "' phải lớn hơn 0.");
                 return false;
             }
@@ -551,7 +958,7 @@ public class ChiTietToaNhapController {
         return true;
     }
 
-    private boolean laChiTietCoTheLuu(ChiTietHoaDon chiTiet) {
+    private boolean laChiTietCoTheLuu(ChiTietPhieuNhap chiTiet) {
         return chiTiet != null
                 && chiTiet.getThuoc() != null
                 && chiTiet.getSoLuong() > 0
@@ -561,7 +968,7 @@ public class ChiTietToaNhapController {
                 && !chiTiet.getThuoc().getDonVi().isBlank();
     }
 
-    private boolean laDongNhapTrong(ChiTietHoaDon chiTiet) {
+    private boolean laDongNhapTrong(ChiTietPhieuNhap chiTiet) {
         if (chiTiet == null) {
             return true;
         }
@@ -577,29 +984,28 @@ public class ChiTietToaNhapController {
                 && chiTiet.getSoLuong() <= 0;
     }
 
-    private ChiTietHoaDon taoDongNhapTrong() {
+    private ChiTietPhieuNhap taoDongNhapTrong() {
         Thuoc thuoc = new Thuoc();
         thuoc.setGiaNhap(ZERO);
         thuoc.setGiaBanSi(ZERO);
         thuoc.setSoLuongTon(0);
 
-        ChiTietHoaDon chiTiet = new ChiTietHoaDon();
+        ChiTietPhieuNhap chiTiet = new ChiTietPhieuNhap();
         chiTiet.setThuoc(thuoc);
         chiTiet.setSoLuong(0);
         chiTiet.setDonVi("");
         chiTiet.setDonGia(ZERO);
-        chiTiet.setThanhTien(ZERO);
         return chiTiet;
     }
 
-    private ChiTietHoaDon timChiTietTrung(ChiTietHoaDon chiTietMoi) {
+    private ChiTietPhieuNhap timChiTietTrung(ChiTietPhieuNhap chiTietMoi) {
         return danhSachGoc.stream()
                 .filter(chiTietHienTai -> laCungThuoc(chiTietHienTai, chiTietMoi))
                 .findFirst()
                 .orElse(null);
     }
 
-    private boolean laCungThuoc(ChiTietHoaDon chiTietA, ChiTietHoaDon chiTietB) {
+    private boolean laCungThuoc(ChiTietPhieuNhap chiTietA, ChiTietPhieuNhap chiTietB) {
         if (chiTietA == null || chiTietB == null || chiTietA.getThuoc() == null || chiTietB.getThuoc() == null) {
             return false;
         }
@@ -616,7 +1022,7 @@ public class ChiTietToaNhapController {
                 && layDonGiaAnToan(chiTietA).compareTo(layDonGiaAnToan(chiTietB)) == 0;
     }
 
-    private void capNhatThongTinThuoc(ChiTietHoaDon chiTiet, Thuoc thuocMoi) {
+    private void capNhatThongTinThuoc(ChiTietPhieuNhap chiTiet, Thuoc thuocMoi) {
         if (chiTiet == null || thuocMoi == null) {
             return;
         }
@@ -632,35 +1038,21 @@ public class ChiTietToaNhapController {
         chiTiet.setDonVi(thuocMoi.getDonVi());
     }
 
-    private Thuoc damBaoCoThuoc(ChiTietHoaDon chiTiet) {
+    private Thuoc damBaoCoThuoc(ChiTietPhieuNhap chiTiet) {
         if (chiTiet.getThuoc() == null) {
             chiTiet.setThuoc(new Thuoc());
         }
         return chiTiet.getThuoc();
     }
 
-    private ChiTietHoaDon layDongTheoIndex(int rowIndex) {
+    private ChiTietPhieuNhap layDongTheoIndex(int rowIndex) {
         if (tableChiTiet == null || rowIndex < 0 || rowIndex >= tableChiTiet.getItems().size()) {
             return null;
         }
         return tableChiTiet.getItems().get(rowIndex);
     }
 
-    private void capNhatThanhTien(ChiTietHoaDon chiTiet) {
-        if (chiTiet == null) {
-            return;
-        }
-        chiTiet.setThanhTien(layDonGiaAnToan(chiTiet).multiply(BigDecimal.valueOf(Math.max(chiTiet.getSoLuong(), 0))));
-    }
-
-    private BigDecimal tinhTongTien() {
-        return danhSachGoc.stream()
-                .map(ChiTietHoaDon::getThanhTien)
-                .filter(thanhTien -> thanhTien != null)
-                .reduce(ZERO, BigDecimal::add);
-    }
-
-    private BigDecimal layDonGiaAnToan(ChiTietHoaDon chiTiet) {
+    private BigDecimal layDonGiaAnToan(ChiTietPhieuNhap chiTiet) {
         return chiTiet != null && chiTiet.getDonGia() != null ? chiTiet.getDonGia() : ZERO;
     }
 
@@ -668,10 +1060,6 @@ public class ChiTietToaNhapController {
         if (tableChiTiet != null) {
             tableChiTiet.refresh();
         }
-    }
-
-    private String dinhDangTien(BigDecimal soTien) {
-        return tienVietNamFormatter.format(soTien == null ? ZERO : soTien);
     }
 
     private String chuanHoaChuoi(String value) {
@@ -682,11 +1070,4 @@ public class ChiTietToaNhapController {
         return value == null ? "" : value;
     }
 
-    public void hienThiThongBao(Alert.AlertType loaiThongBao, String tieuDe, String noiDung) {
-        Alert alert = new Alert(loaiThongBao);
-        alert.setTitle(tieuDe);
-        alert.setHeaderText(null);
-        alert.setContentText(noiDung);
-        alert.showAndWait();
-    }
 }

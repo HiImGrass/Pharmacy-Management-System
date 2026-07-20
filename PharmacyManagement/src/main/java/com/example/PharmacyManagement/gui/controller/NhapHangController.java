@@ -30,7 +30,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
 //Models and services imports
-import com.example.PharmacyManagement.model.ChiTietHoaDon;
+import com.example.PharmacyManagement.model.ChiTietPhieuNhap;
 import com.example.PharmacyManagement.model.Thuoc;
 import com.example.PharmacyManagement.model.PhieuNhap;
 import com.example.PharmacyManagement.service.PhieuNhapInService;
@@ -41,7 +41,7 @@ import com.example.PharmacyManagement.gui.component.FxmlLoaderService;
 import com.example.PharmacyManagement.gui.component.FxmlLoaderService.LoadedView;
 
 //Utils imports
-
+import com.example.PharmacyManagement.gui.util.AlertUtils;
 
 @Controller
 public class NhapHangController {
@@ -95,7 +95,8 @@ public class NhapHangController {
             tabPane.getSelectionModel().select(tabMoi);
         } catch (Exception e) {
             e.printStackTrace();
-            hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống", "Không thể tạo phiếu nhập mới: " + e.getMessage());
+            AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi hệ thống", null,
+                    "Không thể tạo phiếu nhập mới: " + e.getMessage());
         }
     }
 
@@ -106,20 +107,22 @@ public class NhapHangController {
         Tab tabDangChon = layTabDangChon();
 
         if (controller == null || tabDangChon == null) {
-            hienThiThongBao(
+            AlertUtils.hienThiThongBao(
                     Alert.AlertType.WARNING,
                     "Chưa có phiếu nhập",
+                    null,
                     "Vui lòng tạo phiếu nhập trước khi in.");
             return;
         }
 
-        List<ChiTietHoaDon> danhSachIn = new ArrayList<>(
+        List<ChiTietPhieuNhap> danhSachIn = new ArrayList<>(
                 controller.layDanhSachNhapDeIn());
 
         if (danhSachIn.isEmpty()) {
-            hienThiThongBao(
+            AlertUtils.hienThiThongBao(
                     Alert.AlertType.WARNING,
                     "Phiếu nhập trống",
+                    null,
                     "Không có thuốc nào trong phiếu nhập để in.");
             return;
         }
@@ -198,17 +201,19 @@ public class NhapHangController {
         dongTab(tabDangChon);
 
         if (canhBaoIn == null) {
-            hienThiThongBao(
+            AlertUtils.hienThiThongBao(
                     Alert.AlertType.INFORMATION,
                     "Thành công",
+                    null,
                     "Đã lưu và in phiếu nhập "
                             + maPhieuNhap
                             + " thành công!");
 
         } else {
-            hienThiThongBao(
+            AlertUtils.hienThiThongBao(
                     Alert.AlertType.WARNING,
                     "Đã lưu phiếu nhập",
+                    null,
                     canhBaoIn);
         }
     }
@@ -217,12 +222,13 @@ public class NhapHangController {
     public void xuLyThemChiTiet(ActionEvent event) {
         ChiTietToaNhapController controller = layControllerToaDangChon();
         if (controller == null) {
-            hienThiThongBao(Alert.AlertType.WARNING, "Chưa có phiếu nhập",
+            AlertUtils.hienThiThongBao(Alert.AlertType.WARNING, "Chưa có phiếu nhập",
+                    null,
                     "Vui lòng tạo phiếu nhập trước khi thêm thuốc.");
             return;
         }
 
-        Optional<ChiTietHoaDon> ketQua = hienThiDialogNhapLieu(null);
+        Optional<ChiTietPhieuNhap> ketQua = hienThiDialogNhapLieu(null);
         ketQua.ifPresent(controller::themChiTietNhap);
     }
 
@@ -230,18 +236,20 @@ public class NhapHangController {
     public void xuLySuaChiTiet(ActionEvent event) {
         ChiTietToaNhapController controller = layControllerToaDangChon();
         if (controller == null) {
-            hienThiThongBao(Alert.AlertType.WARNING, "Chưa có phiếu nhập",
+            AlertUtils.hienThiThongBao(Alert.AlertType.WARNING, "Chưa có phiếu nhập",
+                    null,
                     "Vui lòng tạo phiếu nhập trước khi sửa chi tiết.");
             return;
         }
 
-        ChiTietHoaDon chiTietDangChon = controller.layDongDuocChon();
+        ChiTietPhieuNhap chiTietDangChon = controller.layDongDuocChon();
         if (chiTietDangChon == null) {
-            hienThiThongBao(Alert.AlertType.WARNING, "Chưa chọn thuốc", "Vui lòng chọn dòng thuốc cần sửa.");
+            AlertUtils.hienThiThongBao(Alert.AlertType.WARNING, "Chưa chọn thuốc", null,
+                    "Vui lòng chọn dòng thuốc cần sửa.");
             return;
         }
 
-        Optional<ChiTietHoaDon> ketQua = hienThiDialogNhapLieu(chiTietDangChon);
+        Optional<ChiTietPhieuNhap> ketQua = hienThiDialogNhapLieu(chiTietDangChon);
         ketQua.ifPresent(chiTietMoi -> controller.capNhatChiTietNhap(chiTietDangChon, chiTietMoi));
     }
 
@@ -260,7 +268,7 @@ public class NhapHangController {
 
         ChiTietToaNhapController controller = loadedView.getController();
         controller.datXuLySuaChiTiet(chiTietDangSua -> {
-            Optional<ChiTietHoaDon> ketQua = hienThiDialogNhapLieu(chiTietDangSua);
+            Optional<ChiTietPhieuNhap> ketQua = hienThiDialogNhapLieu(chiTietDangSua);
             ketQua.ifPresent(chiTietMoi -> controller.capNhatChiTietNhap(chiTietDangSua, chiTietMoi));
         });
 
@@ -302,8 +310,8 @@ public class NhapHangController {
         return dialog.showAndWait();
     }
 
-    private Optional<ChiTietHoaDon> hienThiDialogNhapLieu(ChiTietHoaDon chiTietHienTai) {
-        Dialog<ChiTietHoaDon> dialog = new Dialog<>();
+    private Optional<ChiTietPhieuNhap> hienThiDialogNhapLieu(ChiTietPhieuNhap chiTietHienTai) {
+        Dialog<ChiTietPhieuNhap> dialog = new Dialog<>();
         dialog.setTitle(chiTietHienTai == null ? "Thêm thuốc nhập" : "Sửa thuốc nhập");
         dialog.setHeaderText("Vui lòng điền thông tin thuốc nhập kho:");
 
@@ -324,18 +332,23 @@ public class NhapHangController {
         TextField txtDonVi = new TextField();
         txtDonVi.setPromptText("Nhập đơn vị...");
 
+        TextField txtDonGia = new TextField();
+        txtDonGia.setPromptText("Nhập đơn giá:... đ");
+
         TextArea txtMoTa = new TextArea();
         txtMoTa.setPromptText("Nhập mô tả, có thể để trống...");
         txtMoTa.setPrefRowCount(3);
         txtMoTa.setWrapText(true);
 
-        doDuLieuCuLenDialog(chiTietHienTai, txtTen, txtSoLuong, txtDonVi, txtMoTa);
+        doDuLieuCuLenDialog(chiTietHienTai, txtTen, txtSoLuong, txtDonVi, txtDonGia, txtMoTa);
 
         grid.add(new Label("Tên thuốc:"), 0, 0);
         grid.add(txtTen, 1, 0);
         grid.add(new Label("Số lượng nhập:"), 0, 1);
         grid.add(txtSoLuong, 1, 1);
         grid.add(new Label("Đơn vị:"), 0, 2);
+        grid.add(new Label("Đơn giá:"), 0, 3);
+        grid.add(txtDonGia, 1, 3);
         grid.add(txtDonVi, 1, 2);
         grid.add(new Label("Mô tả:"), 0, 6);
         grid.add(txtMoTa, 1, 6);
@@ -350,9 +363,10 @@ public class NhapHangController {
             if (txtTen.getText().trim().isEmpty()
                     || txtSoLuong.getText().trim().isEmpty()
                     || txtDonVi.getText().trim().isEmpty()) {
-                hienThiThongBao(
+                AlertUtils.hienThiThongBao(
                         Alert.AlertType.ERROR,
                         "Lỗi nhập liệu",
+                        null,
                         "Vui lòng nhập đầy đủ Tên thuốc, Số lượng nhập, Đơn vị và Giá nhập.");
                 return null;
             }
@@ -360,8 +374,11 @@ public class NhapHangController {
             try {
                 int soLuongNhap = Integer.parseInt(txtSoLuong.getText().trim());
 
+                BigDecimal donGiaNhap = new BigDecimal(txtDonGia.getText().trim().replaceAll("[^\\d.]", ""));
+
                 if (soLuongNhap <= 0) {
-                    hienThiThongBao(Alert.AlertType.ERROR, "Lỗi nhập liệu", "Số lượng nhập phải lớn hơn 0.");
+                    AlertUtils.hienThiThongBao(Alert.AlertType.ERROR, "Lỗi nhập liệu", null,
+                            "Số lượng nhập phải lớn hơn 0.");
                     return null;
                 }
 
@@ -370,11 +387,13 @@ public class NhapHangController {
                         txtTen.getText().trim(),
                         soLuongNhap,
                         txtDonVi.getText().trim(),
+                        donGiaNhap,
                         txtMoTa.getText().trim());
             } catch (NumberFormatException ex) {
-                hienThiThongBao(
+                AlertUtils.hienThiThongBao(
                         Alert.AlertType.ERROR,
                         "Lỗi định dạng",
+                        null,
                         "Vui lòng nhập đúng định dạng số cho Số lượng, Giá nhập và Giá bán sỉ.");
                 return null;
             }
@@ -384,10 +403,11 @@ public class NhapHangController {
     }
 
     private void doDuLieuCuLenDialog(
-            ChiTietHoaDon chiTietHienTai,
+            ChiTietPhieuNhap chiTietHienTai,
             TextField txtTen,
             TextField txtSoLuong,
             TextField txtDonVi,
+            TextField txtDonGia,
             TextArea txtMoTa) {
         if (chiTietHienTai == null) {
             return;
@@ -401,13 +421,15 @@ public class NhapHangController {
         }
 
         txtSoLuong.setText(String.valueOf(chiTietHienTai.getSoLuong()));
+        txtDonGia.setText(chiTietHienTai.getDonGia() != null ? chiTietHienTai.getDonGia().toString() : "");
     }
 
-    private ChiTietHoaDon taoChiTietNhap(
-            ChiTietHoaDon chiTietHienTai,
+    private ChiTietPhieuNhap taoChiTietNhap(
+            ChiTietPhieuNhap chiTietHienTai,
             String tenThuoc,
             int soLuongNhap,
             String donVi,
+            BigDecimal donGia,
             String moTa) {
         Thuoc thuoc = new Thuoc();
 
@@ -417,18 +439,19 @@ public class NhapHangController {
 
         thuoc.setTenThuoc(tenThuoc);
         thuoc.setDonVi(donVi);
-        thuoc.setGiaNhap(BigDecimal.ZERO); // Giá nhập sẽ được cập nhật sau khi người dùng nhập
+        thuoc.setGiaNhap(donGia != null ? donGia : BigDecimal.ZERO); // Giá nhập sẽ được cập nhật sau khi người dùng nhập
         thuoc.setGiaBanSi(BigDecimal.ZERO); // Giá bán sỉ sẽ được cập
-        thuoc.setSoLuongTon(0);
+        thuoc.setSoLuongTon(soLuongNhap); // Số lượng tồn sẽ được cập nhật sau khi người dùng nhập
         thuoc.setHanSuDung(null);
         thuoc.setMoTa(moTa);
 
-        ChiTietHoaDon chiTiet = new ChiTietHoaDon();
+        ChiTietPhieuNhap chiTiet = new ChiTietPhieuNhap();
         chiTiet.setThuoc(thuoc);
         chiTiet.setSoLuong(soLuongNhap);
         chiTiet.setDonVi(donVi);
-        chiTiet.setDonGia(BigDecimal.ZERO);
-        chiTiet.setThanhTien(BigDecimal.ZERO); // Thành tiền sẽ được tính sau khi người dùng nhập giá nhập
+        chiTiet.setDonGia(donGia != null ? donGia : BigDecimal.ZERO); // Giá nhập sẽ được cập nhật sau khi người dùng nhập
+
+        // Thành tiền không còn tồn tại trong model ChiTietPhieuNhap nên đã được bỏ qua
 
         return chiTiet;
     }
@@ -454,13 +477,5 @@ public class NhapHangController {
 
     private String layChuoiAnToan(String value) {
         return value == null ? "" : value;
-    }
-
-    private void hienThiThongBao(Alert.AlertType loaiThongBao, String tieuDe, String noiDung) {
-        Alert alert = new Alert(loaiThongBao);
-        alert.setTitle(tieuDe);
-        alert.setHeaderText(null);
-        alert.setContentText(noiDung);
-        alert.showAndWait();
     }
 }
